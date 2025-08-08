@@ -58,3 +58,4 @@ EOL
     sudo systemctl start rclone.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar o serviço rclone.")"; return 1; }
     print_log "$(log_success)" "$(echo_green "CONFIGURAÇÃO DO RCLONE CONCLUÍDA. O SERVIÇO FOI HABILITADO E INICIADO PARA INICIAR AUTOMATICAMENTE.")"
 }
+

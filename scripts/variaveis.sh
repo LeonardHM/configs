@@ -90,12 +90,5 @@ basic_install=("btop" "neofetch" "git" "wget" "speedtest-cli" "mc" "tree")
 
 zsh_install=("zsh" "lolcat" "figlet" "toilet")
 
-
-# Define as variáveis do debconf para iptables-persistent
-sudo debconf-set-selections <<EOF
-iptables-persistent iptables-persistent/autosave_v4 boolean true
-iptables-persistent iptables-persistent/autosave_v6 boolean true
-EOF
-
 server_install=("git" "bc" "mosquitto-clients" "python3" "python3-pip" "python3-tzlocal" "python3-sdnotify" "python3-colorama" "python3-unidecode" "python3-paho-mqtt" "python3-apt" "python3-requests" "snapraid" "unzip" "wget" "avahi-daemon" "avahi-utils" "iptables-persistent" "fuse")
 

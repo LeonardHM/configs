@@ -67,10 +67,10 @@ EOF
 # Função para compartilhar a internet e instalar/configurar o Pi-hole
 compartilhar_internet_pihole(){
     print_log "$(log_aviso)" "$(echo_red "COMPARTILHANDO INTERNET POR ETH0 COM PI-HOLE")"
-    
+
     # Compartilhar a internet antes de instalar o Pi-hole
     compartilhar_internet || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao compartilhar a internet. Abortando instalação do Pi-hole.")"; return 1; }
-    
+
     # Instalar dependências
     print_log "$(log_info)" "$(echo_orange "Instalando dependências...")"
     apt_update >/dev/null 2>&1
@@ -107,12 +107,12 @@ domain=lan
 local=/lan/
 EOF
     print_log "$(log_success)" "$(echo_green "dnsmasq configurado.")"
-	
+
 	# Define a porta do webserver Pi-Hole
 	print_log "$(log_info)" "$(echo_orange "Configurando a porta do webserver Pi-hole...")"
 	sudo sed -i 's/^\s*port\s*=\s*".*"/port = "49999o,[::]:49999o,50000os,[::]:50000os"/' /etc/pihole/pihole.toml >/dev/null 2>&1
 	print_log "$(log_success)" "$(echo_green "Porta do webserver Pi-hole configurada.")"
-	
+
     # Adicionando as blocklists ao banco de dados
     print_log "$(log_info)" "$(echo_orange "Adicionando blocklists ao Pi-hole...")"
     local DB_PATH="/etc/pihole/gravity.db"

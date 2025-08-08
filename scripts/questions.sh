@@ -278,3 +278,4 @@ coletar_respostas() {
         echo
     fi
 }
+

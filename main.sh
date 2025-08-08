@@ -363,4 +363,3 @@ main() {
 # Executa a nova função principal
 main "$@"
 
-

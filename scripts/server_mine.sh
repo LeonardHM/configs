@@ -1,4 +1,4 @@
-server_mine() {
+-server_mine() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO INSTALAÇÃO DO SERVIDOR DE MINECRAFT")"
 
     # Instala Temurin (Java)
@@ -33,7 +33,7 @@ server_mine() {
     # Baixar plugins
     print_log "$(log_info)" "$(echo_orange "Baixando plugins...")"
     cd "$PLUGIN_MINE_DIR" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao entrar no diretório de plugins.")"; return 1; }
-    
+
     # Plugins Principais
     wget -qO Geyser-Spigot.jar https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot &
     wget -qO Floodgate-Spigot.jar https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot &
@@ -52,10 +52,10 @@ server_mine() {
     wget -qO Sleeper.jar https://cdn.modrinth.com/data/Kt3eUOUy/versions/93CEj3T6/Sleeper.jar &
     wget -qO FancyHolograms-2.4.0.jar https://cdn.modrinth.com/data/5QNgOj66/versions/9hQyZvao/FancyHolograms-2.4.0.jar &
     wget -qO ProtocolLib.jar https://github.com/dmulloy2/ProtocolLib/releases/download/5.3.0/ProtocolLib.jar &
-    
+
     # PlayerDoll
     wget -qO PlayerDoll-Main-2.0.jar https://cdn.modrinth.com/data/n3s2JUTc/versions/s7Hrlk5i/PlayerDoll-Main-2.0.jar &
-    
+
     wait
     print_log "$(log_success)" "$(echo_green "Plugins baixados com sucesso.")"
 
@@ -64,7 +64,7 @@ server_mine() {
     cd PlayerDoll/addon || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao entrar no diretório do PlayerDoll.")"; return 1; }
     wget -q https://cdn.modrinth.com/data/n3s2JUTc/versions/s7Hrlk5i/Addon-Doll-v1_21_R1-Mojang-Mapping.jar &
     wget -q https://cdn.modrinth.com/data/n3s2JUTc/versions/s7Hrlk5i/Addon-Wrapper-1202_1211-Mojang-Mapping.jar &
-    
+
     wait
     print_log "$(log_success)" "$(echo_green "Addons do PlayerDoll baixados.")"
 

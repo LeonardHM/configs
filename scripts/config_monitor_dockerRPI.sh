@@ -235,3 +235,4 @@ EOF_RPI_CONFIG" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao adicio
         return 1
     fi
 }
+

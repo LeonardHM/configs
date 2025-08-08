@@ -41,6 +41,8 @@ Este projeto oferece um conjunto de scripts em Bash para automatizar a configura
 curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh && rm get.sh
 ```
 
+> rm get.sh não é extremamente necessario, mas mantem tudo limpo
+
 ### ⚙️ Modos de Execução
 
 #### **Modo Interativo (Padrão)**

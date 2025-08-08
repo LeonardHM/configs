@@ -151,3 +151,4 @@ uninstall_triggercmd() {
     sudo apt-get clean
     sudo apt update
 }
+

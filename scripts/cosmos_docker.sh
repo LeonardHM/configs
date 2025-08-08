@@ -150,7 +150,13 @@ servidor_config() {
 
     # A. Verificação e Instalação do Docker
     if ! command -v docker &> /dev/null; then
-        
+
+        # Define as variáveis do debconf para iptables-persistent
+        sudo debconf-set-selections <<EOF >/dev/null 2>&1
+        iptables-persistent iptables-persistent/autosave_v4 boolean true
+        iptables-persistent iptables-persistent/autosave_v6 boolean true
+EOF
+
         instalar_programa "${server_install[@]}"
         install_docker
         instalacao_completa=false
@@ -160,7 +166,7 @@ servidor_config() {
 
     # B. Verificação e Instalação do Cosmos
     if [ ! -f "/opt/cosmos/cosmos" ]; then
-        
+
         install_cosmos
         instalacao_completa=false
     else
@@ -198,3 +204,4 @@ servidor_config() {
 
     print_log "$(log_success)" "$(echo_green "Configuração concluída com sucesso!")"
 }
+

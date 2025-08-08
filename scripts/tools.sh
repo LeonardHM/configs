@@ -160,8 +160,6 @@ show_banner_info() {
   gradient_line "$bot"
 }
 
-
-
 handle_error() {
     local line_no=$1
     echo_red "Erro ocorreu na linha: ${line_no}"
@@ -275,11 +273,6 @@ instalar_programa() {
 }
 
 
-
-
-
-
-
 # ==============================================================================
 # FUNÇÃO DE DETECÇÃO AUTOMÁTICA DO SISTEMA
 # ==============================================================================
@@ -332,5 +325,4 @@ detectar_sistema() {
 
     return 0
 }
-
 
