@@ -78,24 +78,29 @@ configurar_repositorio() {
     print_log "$(log_success)" "$(echo_green "Repositório configurado com sucesso.")"
 }
 
+
 # --- Execução do Script ---
 main() {
     local ARGS=("$@")
     local skip_git="false"
+    local main_sh_args=() # Nova array para armazenar argumentos para main.sh
 
-    # Processa os argumentos para verificar se a instalação do git deve ser pulada.
+    # Processa os argumentos para verificar a flag --skip_git
     for arg in "${ARGS[@]}"; do
         if [[ "$arg" == "--skip_git" ]]; then
             skip_git="true"
+        else
+            # Adiciona o argumento para a nova array, se não for --skip_git
+            main_sh_args+=("$arg")
         fi
     done
 
     instalar_dependencias "$skip_git"
     configurar_repositorio
 
-    # Executa o script principal (`main.sh`) passando todos os argumentos.
+    # Executa o script principal (`main.sh`) com os argumentos filtrados.
     print_log "$(log_info)" "$(echo_green "Iniciando a execução do script principal ($CLONED_REPO_DIR/main.sh)...")"
-    exec sudo -E "$CLONED_REPO_DIR/main.sh" "${ARGS[@]}"
+    exec sudo -E "$CLONED_REPO_DIR/main.sh" "${main_sh_args[@]}"
 }
 
 # Executa a função principal do script com todos os argumentos.

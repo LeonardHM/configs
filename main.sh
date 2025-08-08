@@ -49,6 +49,7 @@ source "$SCRIPTS_FOLDER/tools.sh"
 source "$SCRIPTS_FOLDER/variaveis.sh"
 source "$SCRIPTS_FOLDER/wifi_eth_pihole.sh"
 
+detectar_sistema
 
 # --- Função Principal de Execução ---
 main() {
@@ -128,19 +129,19 @@ main() {
     if [[ -n "$COMMAND" ]]; then
         if [[ "$EXPERT_MODE" == true ]]; then
             if type -t "$COMMAND" >/dev/null; then
-                log_info "Modo Expert ativado. Executando função dedicada: $COMMAND"
+                print_log "$(log_info)" "$(echo_orange "Modo Expert ativado. Executando função dedicada: '$COMMAND'")"
                 "$COMMAND"
-                log_success "Execução de $COMMAND concluída."
+                print_log "$(log_success)" "$(echo_green "Execução de '$COMMAND' concluída.")"
                 exit 0
             else
-                log_error "Comando desconhecido: $COMMAND"
+                print_log "$(log_error)" "$(echo_red "Comando desconhecido: '$COMMAND'")"
             fi
         else
-            log_error "A flag --expert é necessária para executar a função dedicada '$COMMAND'."
+            print_log "$(log_error)" "$(echo_red "A flag --expert é necessária para executar a função dedicada '$COMMAND'.")"
         fi
     fi
 
-    detectar_sistema
+
     echo_green "SISTEMA DETECTADO: $SISTEMA_TIPO ($SISTEMA_ARCH) | Distro: $DISTRO_NOME ($DISTRO_CODENAME)"
     echo
 
@@ -149,7 +150,7 @@ main() {
 
         print_log "$(log_aviso)" "$(echo_red "Modo de instalação rápida (--fast) ativado. Pulando perguntas interativas.")"
     else
-        log_info "Iniciando modo interativo..."
+        print_log "$(log_info)" "$(echo_orange "Iniciando modo interativo...")"
         # Chama a sua função para coletar as respostas interativas
         coletar_respostas
     fi
