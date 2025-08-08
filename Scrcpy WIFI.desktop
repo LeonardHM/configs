@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Scrcpy
+Comment=Display and control your Android device
+Exec=sh -c "pgrep scrcpy > /dev/null || scrcpy -e --video-encoder 'c2.android.avc.encoder' & sleep 6 && scrcpy -e"
+Icon=scrcpy
+Path=
+Terminal=false
+StartupNotify=false
+Name[pt_BR]=Scrcpy WIFI
