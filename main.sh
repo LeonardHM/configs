@@ -120,9 +120,10 @@ main() {
 
     echo
     echo
-
     show_ascii_logo
     show_banner_info
+    echo
+    echo
 
     # --- Lógica de Fluxo de Execução ---
     # 1. Modo Expert: Executa um comando específico, mas apenas se a flag --expert for passada.

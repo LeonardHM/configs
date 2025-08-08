@@ -57,6 +57,14 @@ instalar_dependencias() {
         fi
     done
 
+    # --- NOVO BLOCO DE VERIFICAÇÃO ---
+    if [[ "$skip_git" == "true" ]]; then
+        if ! command -v git &>/dev/null; then
+            print_log "$(log_error)" "$(echo_red "Erro: O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
+            exit 1
+        fi
+    fi
+
     print_log "$(log_success)" "$(echo_green "Dependências básicas verificadas e instaladas.")"
 }
 
