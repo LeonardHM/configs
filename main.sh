@@ -94,9 +94,9 @@ main() {
             --CONTAINERS_PARA_MONITORAR=*)
                 IFS=',' read -ra CONTAINERS_PARA_MONITORAR <<< "${arg#*=}"
                 ;;
+            # Variáveis de perguntas
             --update_system=*) update_system="${arg#*=}" ;;
             --install_basic_zsh=*) install_basic_zsh="${arg#*=}" ;;
-            --sistema=*) sistema="${arg#*=}" ;;
             --install_theme=*) install_theme="${arg#*=}" ;;
             --programas=*) programas="${arg#*=}" ;;
             --pi_apps_programas=*) pi_apps_programas="${arg#*=}" ;;
@@ -105,12 +105,10 @@ main() {
             --habilitar_tft=*) habilitar_tft="${arg#*=}" ;;
             --drive=*) drive="${arg#*=}" ;;
             --alexa_commands=*) alexa_commands="${arg#*=}" ;;
-            --docker=*) docker="${arg#*=}" ;;
-            --cloudflare=*) cloudflare="${arg#*=}" ;;
+
             --cosmos=*) cosmos="${arg#*=}" ;;
             --mine_server=*) mine_server="${arg#*=}" ;;
             --reiniciar=*) reiniciar="${arg#*=}" ;;
-            # Comando dedicado (se não for uma variável ou flag)
             *)
                 if [[ "$arg" != "--" ]]; then
                     COMMAND="$arg"
@@ -119,7 +117,6 @@ main() {
         esac
     done
 
-    print_log "$(log_info)" "$(echo_yellow "Argumentos passados: ${ARGS[@]}")"
     echo
     echo
 
@@ -329,17 +326,6 @@ main() {
     # Configurar comandos Alexa
     if [[ $alexa_commands =~ ^[Yy]$ ]]; then
         commands_alexa
-    fi
-
-    # Instalar Docker
-    if [[ $docker =~ ^[Yy]$ ]]; then
-        install_docker
-    fi
-
-    # Configurar Cloudflare Tunnel
-    if [[ $cloudflare =~ ^[Yy]$ ]]; then
-        install_docker
-        cloudflare_tunnel
     fi
 
     # Configurar Servidor Cosmos

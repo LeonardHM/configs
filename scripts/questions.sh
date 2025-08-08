@@ -216,29 +216,8 @@ coletar_respostas() {
         echo
     fi
 
-    # --- P:12.0 - docker ---
-    if [[ -z "$docker" || ! "$docker" =~ ^[YyNn]$ ]]; then
-        echo_orange "DESEJA INSTALAR DOCKER? (Y/N)"
-        read -p "Digite Y para sim ou N para não: " docker
-        echo
-        docker=$(echo "$docker" | tr '[:lower:]' '[:upper:]')
-        docker=${docker:-N}
-    else
-        print_log "$(log_info)" "$(echo_yellow "RESPOSTA PARA 'docker' JÁ DEFINIDA: '$docker'. PULANDO PERGUNTA.")"
-        echo
-    fi
-
-    # --- P:13.0 - cloudflare ---
-    if [[ -z "$cloudflare" || ! "$cloudflare" =~ ^[YyNn]$ ]]; then
-        echo_orange "DESEJA INSTALAR CLOUDFLARE? (Y/N)"
-        read -p "Digite Y para sim ou N para não: " cloudflare
-        echo
-        cloudflare=$(echo "$cloudflare" | tr '[:lower:]' '[:upper:]')
-        cloudflare=${cloudflare:-N}
-    else
-        print_log "$(log_info)" "$(echo_yellow "RESPOSTA PARA 'cloudflare' JÁ DEFINIDA: '$cloudflare'. PULANDO PERGUNTA.")"
-        echo
-    fi
+    # --- P:12.0
+    # --- P:13.0
 
     # --- P:14.0 - cosmos ---
     if [[ -z "$cosmos" || ! "$cosmos" =~ ^[YyNn]$ ]]; then

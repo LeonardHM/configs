@@ -137,6 +137,7 @@ commands_alexa() {
 
 uninstall_triggercmd() {
     ############ DESISTALAR ##############
+    print_log "$(log_aviso)" "$(echo_red "Desistalando TriggerCMD...")"
     sudo systemctl stop triggercmdagent
     sudo systemctl disable triggercmdagent
     sudo service triggercmdagent stop

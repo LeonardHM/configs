@@ -40,8 +40,8 @@ Este projeto oferece um conjunto de scripts em Bash para automatizar a configura
 ```bash
 curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh && rm get.sh
 ```
-
-> rm get.sh não é extremamente necessario, mas mantem tudo limpo
+> sudo -E bash get.sh --skip_git
+> rm get.sh não é estritamente necessário, mas mantém tudo limpo
 
 ### ⚙️ Modos de Execução
 
@@ -58,12 +58,14 @@ sudo -E bash get.sh -- --fast --docker=y --ativar_ssh=y
 ```
 
 #### **Modo Expert (`--expert`)**
- Executa apenas uma função específica do script.
+ Executa apenas UMA função específica do script.
 ```bash
-sudo -E bash main.sh -- --expert configurar_rclone
+sudo -E bash main.sh -- --expert config_zsh
 ```
 
-**Sintaxe:** `sudo -E bash get.sh -- --variavel=valor --outra_variavel=valor`
+**Sintaxe PADRÃO:** `sudo -E bash get.sh -- --variavel=valor --outra_variavel=valor`
+**Sintaxe FAST:** `sudo -E bash get.sh -- --fast --variavel=valor --outra_variavel=valor`
+**Sintaxe EXPERT:** `sudo -E bash get.sh -- --expert nome_da_função`
 
 
 ### Funções / Variáveis Disponíveis
@@ -75,7 +77,6 @@ sudo -E bash main.sh -- --expert configurar_rclone
 | | `--instalar_pi_hole` | `y\|n` | Instala o Pi-hole junto com o compartilhamento de internet. |
 | | `--update_system` | `y\|n` | Atualiza todos os pacotes e o sistema. |
 | | `--install_basic_zsh` | `y\|n` | Instala programas básicos e o Zsh. |
-| | `--sistema` | `pc\|rasp\|termux` | Define o tipo de sistema para a instalação de programas básicos. |
 | | `--install_theme` | `y\|n` | Instala temas de shell. |
 | | `--programas` | `"prog1 prog2"` | Instala programas específicos (ex: `"Heimdall SCRCPY PI-APPS"`). |
 | | `--pi_apps_programas` | `"prog1 prog2"` | Instala programas do Pi-Apps (ex: `"Minecraft Vivaldi"`). <br> **Observação:** Esta variável só terá efeito se a variável `--programas` incluir `PI-APPS`. |
@@ -156,7 +157,16 @@ sudo -E bash get.sh -- \
 
 ## ⚙️ Configurações Avançadas
 
+### 🛠️ Variáveis EXPERT (funções específica)
 
+| Variável | Descrição |
+| :--- | :--- | :--- | :--- |
+| `uninstall_triggercmd` | Desistalar TriggerCMD. |
+| `config_zsh` | Instala e Configura o ZSN . |
+| `docker` | Instala o Docker. |
+| `cloudflare` | Instala Docker e Cloudflare-Tunnel. |
+| `configurar_home_assistant` | Configura HA (HACS, configuration.yaml, ...)
+| `install_monitor` | (Instala e configura RPi-Reporter-MQTT2HA-Daemon e monitor Docker)
 
 ---
 
