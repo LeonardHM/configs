@@ -230,6 +230,7 @@ config_theme() {
                 exit 1
             }
         else
+            git config --global --add safe.directory "$CLONE_DIR/flat-remix"
             git -C "$CLONE_DIR/flat-remix" pull --quiet >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha ao atualizar Flat-Remix.")"
                 exit 1
@@ -243,6 +244,7 @@ config_theme() {
                 exit 1
             }
         else
+            git config --global --add safe.directory "$CLONE_DIR/flat-remix-gtk"
             git -C "$CLONE_DIR/flat-remix-gtk" pull --quiet >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha ao atualizar Flat-Remix-GTK.")"
                 exit 1
@@ -260,6 +262,7 @@ config_theme() {
                 exit 1
             }
         else
+            git config --global --add safe.directory "$CLONE_DIR/custom"
             git -C "$CLONE_DIR/custom" pull --quiet >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha ao atualizar LeonardHM/custom.")"
                 exit 1
