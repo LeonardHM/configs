@@ -61,7 +61,7 @@ instalar_dependencias() {
     if [[ "$skip_git" == "true" ]]; then
         if ! command -v git &>/dev/null; then
             print_log "$(log_error)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
-            print_log "$(log_error)$(echo_red " O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
+            print_log "$(log_error)$(echo_red " O Git não está.")"
 
             exit 1
         fi
