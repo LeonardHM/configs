@@ -53,7 +53,7 @@ instalar_dependencias() {
         # Se o comando não estiver instalado, instale-o.
         if ! command -v "$cmd" &>/dev/null; then
             print_log "$(log_info)" "$(echo_orange "Instalando $cmd...")"
-            sudo apt-get install -y "$cmd" >/dev/null 2>&1 || print_log "$(log_error)" "$(echo_red "Falha ao instalar '$cmd'.")"
+            sudo apt-get install -y "$cmd" >/dev/null 2>&1 || print_log "$(log_error)" "$(echo_red "Falha ao instalar $cmd.")"
         fi
     done
 
@@ -61,7 +61,6 @@ instalar_dependencias() {
     if [[ "$skip_git" == "true" ]]; then
         if ! command -v git &>/dev/null; then
             print_log "$(log_error)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
-            print_log "$(log_error)" "$(echo_red "Falha ao criar diretório base: '$INSTALL_BASE_DIR'")"
             exit 1
         fi
     fi
@@ -75,7 +74,7 @@ configurar_repositorio() {
     print_log "$(log_info)" "$(echo_red "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
 
     # Cria o diretório base e ajusta as permissões.
-    sudo mkdir -p "$INSTALL_BASE_DIR" || print_log "$(log_error)" "$(echo_red "Falha ao criar diretório base: '$INSTALL_BASE_DIR'")"
+    sudo mkdir -p "$INSTALL_BASE_DIR" || print_log "$(log_error)" "$(echo_red "Falha ao criar diretório base: $INSTALL_BASE_DIR")"
     sudo chown -R "$(id -u):$(id -g)" "$INSTALL_BASE_DIR"
 
     if [ ! -d "$CLONED_REPO_DIR" ]; then
