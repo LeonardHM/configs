@@ -38,6 +38,10 @@ clear
 instalar_dependencias() {
     local skip_git="$1"
     print_log "$(log_aviso)" "$(echo_red "Verificando e instalando dependências básicas...")"
+    print_log "$(log_error)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
+    print_log "$(log_info)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
+    print_log "$(log_info)" "$(echo_red "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
+    print_log "$(log_error)" "$(echo_orange "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
 
     # Atualiza a lista de pacotes antes de instalar.
     sudo apt-get update >/dev/null 2>&1 || print_log "$(log_error)" "$(echo_red "Falha ao atualizar a lista de pacotes.")"
