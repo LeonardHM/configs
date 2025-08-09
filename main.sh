@@ -143,7 +143,7 @@ main() {
     fi
 
 
-    echo_green "SISTEMA DETECTADO: $SISTEMA_TIPO ($SISTEMA_ARCH) | Distro: $DISTRO_NOME ($DISTRO_CODENAME)"
+    echo_green "SISTEMA DETECTADO: $SISTEMA_TIPO ($SISTEMA_ARCH) | Distro: $DISTRO_NOME / $DISTRO_NAME ($DISTRO_CODENAME) $arquitetura"
     echo
 
     # 2. Modo Fast: Pula todas as perguntas.

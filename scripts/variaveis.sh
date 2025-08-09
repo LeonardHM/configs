@@ -81,10 +81,6 @@ DATAPACK_MINE_DIR="$MINE_DIR/datapacks"
 HA_CONFIG_PATH="/var/lib/docker/volumes/Home-Assistant-config/_data"
 HA_CC_PATH="$HA_CONFIG_PATH/custom_components"
 
-
-# Variáveis globais para o sistema (não configuráveis). O main.sh as preenche.
-arquitetura=$(uname -m)
-
 # Variaveis de instalação
 basic_install=("btop" "neofetch" "git" "wget" "speedtest-cli" "mc" "tree")
 

@@ -10,7 +10,7 @@ install_docker() {
     # Executar todas as etapas de instalação em um único processo em segundo plano
     {
         print_log "$(log_aviso)" "$(echo_orange "Configurando o repositório Docker...")"
-        local REPO_URL="https://download.docker.com/linux/$DISTRO_NOME"
+        local REPO_URL="https://download.docker.com/linux/$DISTRO_NAME"
         local REPO_FILE="/etc/apt/sources.list.d/docker.list"
         local REPO_ENTRY="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $REPO_URL $DISTRO_CODENAME stable"
 
@@ -104,7 +104,7 @@ install_cosmos() {
     {
         # Instalar MergerFS
         local MERGERFS_VERSION="2.40.2"
-        local DEB_NAME="mergerfs_${MERGERFS_VERSION}.${DISTRO_NOME}-${DISTRO_CODENAME}_${SISTEMA_ARCH}.deb"
+        local DEB_NAME="mergerfs_${MERGERFS_VERSION}.${DISTRO_NAME}-${DISTRO_CODENAME}_${SISTEMA_ARCH}.deb"
         local DEB_URL="https://github.com/trapexit/mergerfs/releases/download/${MERGERFS_VERSION}/${DEB_NAME}"
 
         if ! [ -f "/tmp/$DEB_NAME" ]; then

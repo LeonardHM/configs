@@ -219,6 +219,18 @@ apt_update() {
         fi
     fi
 }
+#curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh --skip_git --expert apt_upgrade && rm get.sh
+#[AVISO] ATUALIZANDO PACOTES E SISTEMA...
+#[INFO] Analisando pacotes...
+#0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#
+#[✓] Atualizando sistema...
+#[SUCESSO] Sistema atualizado com sucesso.
+#[SUCESSO] Execução de 'apt_upgrade' concluída.
+
+
+
+
 
 
 apt_upgrade2() {
@@ -250,6 +262,12 @@ apt_upgrade2() {
     print_log "$(log_success)" "$(echo_green "Sistema atualizado com sucesso.")"
     return 0
 }
+#curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh --skip_git --expert apt_upgrade2 && rm get.sh
+#[AVISO] ATUALIZANDO PACOTES E SISTEMA...
+#
+#[✓] Atualizando sistema...
+#[SUCESSO] Sistema atualizado com sucesso.
+#[SUCESSO] Execução de 'apt_upgrade2' concluída.
 
 
 
@@ -329,6 +347,7 @@ detectar_sistema() {
         "aarch64") SISTEMA_ARCH="arm64" ;;
         "armv7l") SISTEMA_ARCH="armhf" ;;
         *) SISTEMA_ARCH="desconhecido" ;;
+        arquitetura=$SISTEMA_ARCH
     esac
 
     if command -v termux-info >/dev/null 2>&1; then
@@ -342,6 +361,7 @@ detectar_sistema() {
 
         if [ -f /etc/os-release ]; then
             source /etc/os-release
+            DISTRO_NAME=${ID:-unknown}
             DISTRO_CODENAME=${VERSION_CODENAME:-unknown}
         fi
     elif [ -f /etc/os-release ]; then
