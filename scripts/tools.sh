@@ -388,5 +388,5 @@ detectar_sistema() {
 
     return 0
 }
-arquitetura=$SISTEMA_ARCH
+arquitetura="$SISTEMA_ARCH"
 
