@@ -221,8 +221,6 @@ config_theme() {
     # Cria um subshell para executar as operações em segundo plano.
     # O `&` no final envia o subshell para o background, e seu PID é armazenado.
     (
-        print_log "$(log_info)" "$(echo_yellow "Clonando / Atualizando Flat-Remix, Flat-Remix-GTK, LeonardHM/custom. E configurando pasta de temas e icones em $HOME..")"
-
         # Clona ou atualiza o repositório Flat-Remix
         if [ ! -d "$CLONE_DIR/flat-remix" ]; then
             git clone --quiet "https://github.com/daniruiz/flat-remix" "$CLONE_DIR/flat-remix" >/dev/null 2>&1 || {
@@ -269,31 +267,34 @@ config_theme() {
             }
         fi
 
-        # Copia os temas e ícones, verificando se a operação falhou.
-        cp -fr "$CLONE_DIR/custom/.icons" "$HOME/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/custom/.icons para $HOME/.")"
+        # Sincroniza o diretório de ícones, sobrescrevendo apenas os arquivos que mudaram
+        rsync -a "$CLONE_DIR/custom/.icons/" "$HOME/" || {
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.icons para $HOME/.")"
             exit 1
         }
 
-
-        cp -fr "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/ para $HOME/.icons/.")"
+        # Sincroniza o diretório de ícones Flat-Remix
+        rsync -a "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
+            # Mensagem de erro corrigida para 'sincronizar'
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/ para $HOME/.icons/.")"
             exit 1
         }
 
-
-        cp -fr "$CLONE_DIR/custom/.themes" "$HOME/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/custom/.themes para $HOME/.")"
+        # Sincroniza o diretório de temas
+        rsync -a "$CLONE_DIR/custom/.themes/" "$HOME/" || {
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.themes para $HOME/.")"
             exit 1
         }
 
         # Copia os temas Flat-Remix-GTK.
         for theme in "Flat-Remix-GTK-Blue-Dark" "Flat-Remix-GTK-Blue-Dark-Solid" "Flat-Remix-GTK-Blue-Darkest" "Flat-Remix-GTK-Blue-Darkest-Solid"; do
-            cp -fr "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
-                print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/flat-remix-gtk/themes/$theme/ para $HOME/.themes/.")"
+            rsync -a "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
+                print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix-gtk/themes/$theme/ para $HOME/.themes/.")"
                 exit 1
             }
         done
+
+
 
     ) & # Executa todo o bloco acima em segundo plano.
     local pid=$! # Armazena o PID do processo em segundo plano.
