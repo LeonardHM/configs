@@ -62,7 +62,8 @@ instalar_dependencias() {
         if ! command -v git &>/dev/null; then
             print_log "$(log_error)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
             print_log "$(log_info)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
-
+            print_log "$(log_info)" "$(echo_red "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
+            print_log "$(log_error)" "$(echo_red "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
             exit 1
         fi
     fi

@@ -53,9 +53,9 @@ log_success() {
 
 log_error() {
     if [[ -n "$1" ]]; then
-        echo -e -n "\033[48;5;196m\033[97m[ERRO]\033[0m $1"
+        echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m $1"
     else
-        echo -e -n "\033[48;5;196m\033[97m[ERRO]\033[0m"
+        echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m"
     fi
 }
 
