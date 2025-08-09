@@ -268,28 +268,28 @@ config_theme() {
         fi
 
         # Sincroniza o diretório de ícones, sobrescrevendo apenas os arquivos que mudaram
-        sudo rsync -a "$CLONE_DIR/custom/.icons/" "$HOME/.icons" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.icons para $HOME/.icons")"
+        rsync -a "$CLONE_DIR/custom/.icons/" "$HOME/.icons/" || {
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.icons/ para $HOME/.icons")"
             exit 1
         }
 
         # Sincroniza o diretório de ícones Flat-Remix
-        sudo rsync -a "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
+        rsync -a "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark" "$HOME/.icons/" || {
             # Mensagem de erro corrigida para 'sincronizar'
-            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/ para $HOME/.icons/")"
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark para $HOME/.icons/")"
             exit 1
         }
 
         # Sincroniza o diretório de temas
-        sudo rsync -a "$CLONE_DIR/custom/.themes/" "$HOME/.themes/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.themes para $HOME/.themes/")"
+        rsync -a "$CLONE_DIR/custom/.themes/" "$HOME/.themes/" || {
+            print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.themes/ para $HOME/.themes/")"
             exit 1
         }
 
         # Copia os temas Flat-Remix-GTK.
         for theme in "Flat-Remix-GTK-Blue-Dark" "Flat-Remix-GTK-Blue-Dark-Solid" "Flat-Remix-GTK-Blue-Darkest" "Flat-Remix-GTK-Blue-Darkest-Solid"; do
-            sudo rsync -a "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
-                print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix-gtk/themes/$theme/ para $HOME/.themes/")"
+            rsync -a "$CLONE_DIR/flat-remix-gtk/themes/$theme" "$HOME/.themes/" || {
+                print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix-gtk/themes/$theme para $HOME/.themes/")"
                 exit 1
             }
         done
