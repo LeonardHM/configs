@@ -217,7 +217,7 @@ func_pc_rasp() {
 # Função para configurar temas, ícones e wallpapers.
 config_theme() {
     print_log "$(log_aviso)" "$(echo_orange "Clonando / Atualizando repositórios de temas, ícones e wallpapers...")"
-    echo_yellow "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom."
+    echo_orange "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom."
     # Cria um subshell para executar as operações em segundo plano.
     # O `&` no final envia o subshell para o background, e seu PID é armazenado.
     (
@@ -299,13 +299,13 @@ config_theme() {
     local pid=$! # Armazena o PID do processo em segundo plano.
 
     # Exibe o spinner e espera a conclusão do processo.
-    if ! show_progress "Clonando e configurando temas e ícones" "$pid"; then
+    if ! show_progress "Clonando e configurando temas, ícones e wallpapers..." "$pid"; then
         print_log "$(log_error)" "$(echo_red "ERRO: O processo de configuração de temas falhou. Verifique os logs acima.")"
         return 1
     fi
 
     # Se o processo em segundo plano for concluído com sucesso, exibe a mensagem final.
-    print_log "$(log_success)" "$(echo_green "Temas e ícones copiados com sucesso.")"
+    print_log "$(log_success)" "$(echo_green "Temas, ícones e wallpapers copiados com sucesso.")"
     return 0
 }
 
