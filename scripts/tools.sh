@@ -347,7 +347,7 @@ detectar_sistema() {
         "aarch64") SISTEMA_ARCH="arm64" ;;
         "armv7l") SISTEMA_ARCH="armhf" ;;
         *) SISTEMA_ARCH="desconhecido" ;;
-        arquitetura=$SISTEMA_ARCH
+        arquitetura=$SISTEMA_ARCH ;;
     esac
 
     if command -v termux-info >/dev/null 2>&1; then
