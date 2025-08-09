@@ -268,27 +268,27 @@ config_theme() {
         fi
 
         # Sincroniza o diretório de ícones, sobrescrevendo apenas os arquivos que mudaram
-        rsync -a "$CLONE_DIR/custom/.icons/" "$HOME/" || {
+        sudo rsync -a "$CLONE_DIR/custom/.icons/" "$HOME/" || {
             print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.icons para $HOME/.")"
             exit 1
         }
 
         # Sincroniza o diretório de ícones Flat-Remix
-        rsync -a "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
+        sudo rsync -a "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
             # Mensagem de erro corrigida para 'sincronizar'
             print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/ para $HOME/.icons/.")"
             exit 1
         }
 
         # Sincroniza o diretório de temas
-        rsync -a "$CLONE_DIR/custom/.themes/" "$HOME/" || {
+        sudo rsync -a "$CLONE_DIR/custom/.themes/" "$HOME/" || {
             print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/custom/.themes para $HOME/.")"
             exit 1
         }
 
         # Copia os temas Flat-Remix-GTK.
         for theme in "Flat-Remix-GTK-Blue-Dark" "Flat-Remix-GTK-Blue-Dark-Solid" "Flat-Remix-GTK-Blue-Darkest" "Flat-Remix-GTK-Blue-Darkest-Solid"; do
-            rsync -a "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
+            sudo rsync -a "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
                 print_log "$(log_error)" "$(echo_red "Falha ao sincronizar $CLONE_DIR/flat-remix-gtk/themes/$theme/ para $HOME/.themes/.")"
                 exit 1
             }
