@@ -70,14 +70,6 @@ instalar_dependencias() {
     print_log "$(log_success)" "$(echo_green "Dependências básicas verificadas e instaladas.")"
 }
 
-por algum motivo o erro esta exibindo em linha errada
-[AVISO]  Verificando e instalando dependências básicas...
-[INFO]  Instalação do git pulada por solicitação do usuário.
-[ERRO] 
- O Git não está instalado e a instalação foi pulada. O script não pode continuar.
-
-
-
 
 # Clona ou atualiza o repositório de configurações.
 configurar_repositorio() {

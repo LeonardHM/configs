@@ -57,7 +57,6 @@ log_error() {
     else
         echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m"
     fi
-    exit 1
 }
 
 log_aviso() {
