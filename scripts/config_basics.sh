@@ -216,66 +216,78 @@ func_pc_rasp() {
 
 # Função para configurar temas, ícones e wallpapers.
 config_theme() {
-    print_log "$(log_info)" "$(echo_yellow "Clonando repositórios de temas, ícones e wallpapers...")"
-
+    print_log "$(log_aviso)" "$(echo_orange "Clonando / Atualizando repositórios de temas, ícones e wallpapers...")"
+    echo_yellow "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom."
     # Cria um subshell para executar as operações em segundo plano.
     # O `&` no final envia o subshell para o background, e seu PID é armazenado.
     (
-        # Entra no diretório e verifica se a operação foi bem-sucedida.
-        cd "$CLONE_DIR" || {
-            print_log "$(log_error)" "$(echo_red "ERRO: Falha ao entrar no diretório '$CLONE_DIR'")"
-            exit 1
-        }
+        print_log "$(log_info)" "$(echo_yellow "Clonando / Atualizando Flat-Remix, Flat-Remix-GTK, LeonardHM/custom. E configurando pasta de temas e icones em $HOME..")"
 
-        # Clona os repositórios, verificando a cada passo se houve falha.
-        print_log "$(log_info)" "$(echo_yellow "Clonando Flat-Remix...")"
-        git clone --quiet "https://github.com/daniruiz/flat-remix" >/dev/null 2>&1 || {
-            print_log "$(log_error)" "$(echo_red "Falha ao clonar Flat-Remix.")"
-            exit 1
-        }
+        # Clona ou atualiza o repositório Flat-Remix
+        if [ ! -d "$CLONE_DIR/flat-remix" ]; then
+            git clone --quiet "https://github.com/daniruiz/flat-remix" "$CLONE_DIR/flat-remix" >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao clonar Flat-Remix.")"
+                exit 1
+            }
+        else
+            git -C "$CLONE_DIR/flat-remix" pull --quiet >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao atualizar Flat-Remix.")"
+                exit 1
+            }
+        fi
 
-        print_log "$(log_info)" "$(echo_yellow "Clonando Flat-Remix-GTK...")"
-        git clone --quiet "https://github.com/daniruiz/flat-remix-gtk" >/dev/null 2>&1 || {
-            print_log "$(log_error)" "$(echo_red "Falha ao clonar Flat-Remix-GTK.")"
-            exit 1
-        }
+        # Clona ou atualiza o repositório Flat-Remix-GTK
+        if [ ! -d "$CLONE_DIR/flat-remix-gtk" ]; then
+            git clone --quiet "https://github.com/daniruiz/flat-remix-gtk" "$CLONE_DIR/flat-remix-gtk" >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao clonar Flat-Remix-GTK.")"
+                exit 1
+            }
+        else
+            git -C "$CLONE_DIR/flat-remix-gtk" pull --quiet >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao atualizar Flat-Remix-GTK.")"
+                exit 1
+            }
+        fi
 
         # Cria os diretórios necessários.
         mkdir -p "$HOME/.icons"
         mkdir -p "$HOME/.themes"
 
-
-        print_log "$(log_info)" "$(echo_yellow "Clonando LeonardHM/custom...")"
-        git clone --quiet "https://github.com/LeonardHM/custom" >/dev/null 2>&1 || {
-            print_log "$(log_error)" "$(echo_red "Falha ao clonar LeonardHM/custom.")"
-            exit 1
-        }
-
+        # Clona ou atualiza o repositório LeonardHM/custom
+        if [ ! -d "$CLONE_DIR/custom" ]; then
+            git clone --quiet "https://github.com/LeonardHM/custom" "$CLONE_DIR/custom" >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao clonar LeonardHM/custom.")"
+                exit 1
+            }
+        else
+            git -C "$CLONE_DIR/custom" pull --quiet >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao atualizar LeonardHM/custom.")"
+                exit 1
+            }
+        fi
 
         # Copia os temas e ícones, verificando se a operação falhou.
-        print_log "$(log_info)" "$(echo_yellow "Copiando ícones de custom...")"
         cp -fr "$CLONE_DIR/custom/.icons" "$HOME/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar ícones de configs.")"
+            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/custom/.icons para $HOME/.")"
             exit 1
         }
 
-        print_log "$(log_info)" "$(echo_yellow "Copiando ícones Flat-Remix...")"
+
         cp -fr "$CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/" "$HOME/.icons/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar ícones Flat-Remix.")"
+            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/flat-remix/Flat-Remix-Blue-Dark/ para $HOME/.icons/.")"
             exit 1
         }
 
-        print_log "$(log_info)" "$(echo_yellow "Copiando temas de custom...")"
+
         cp -fr "$CLONE_DIR/custom/.themes" "$HOME/" || {
-            print_log "$(log_error)" "$(echo_red "Falha ao copiar temas de configs.")"
+            print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/custom/.themes para $HOME/.")"
             exit 1
         }
 
         # Copia os temas Flat-Remix-GTK.
         for theme in "Flat-Remix-GTK-Blue-Dark" "Flat-Remix-GTK-Blue-Dark-Solid" "Flat-Remix-GTK-Blue-Darkest" "Flat-Remix-GTK-Blue-Darkest-Solid"; do
-            print_log "$(log_info)" "$(echo_yellow "Copiando tema '$theme'...")"
             cp -fr "$CLONE_DIR/flat-remix-gtk/themes/$theme/" "$HOME/.themes/" || {
-                print_log "$(log_error)" "$(echo_red "Falha ao copiar o tema '$theme'.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao copiar $CLONE_DIR/flat-remix-gtk/themes/$theme/ para $HOME/.themes/.")"
                 exit 1
             }
         done
