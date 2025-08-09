@@ -143,7 +143,7 @@ main() {
     fi
 
 
-    echo_green "SISTEMA DETECTADO: $SISTEMA_TIPO ($SISTEMA_ARCH) | Distro: $DISTRO_NOME / $DISTRO_NAME ($DISTRO_CODENAME) $arquitetura"
+    echo_green "SISTEMA DETECTADO: $SISTEMA_TIPO ($SISTEMA_ARCH) | Distro: $DISTRO_NOME / $DISTRO_NAME ($DISTRO_CODENAME)"
     echo
 
     # 2. Modo Fast: Pula todas as perguntas.
@@ -255,9 +255,9 @@ main() {
     if [[ "$pi_apps_programas" =~ .*[Mm][Ii][Nn][Ee][Cc][Rr][Aa][Ff][Tt].* ]]; then
         print_log "$(log_aviso)" "$(echo_red "INSTALANDO MINECRAFT")"
         local install_script
-        if [[ "$arquitetura" == "armv6l" || "$arquitetura" == "armv7l" ]]; then
+        if [[ "$$SISTEMA_ARCH" == "armv6l" || "$$SISTEMA_ARCH" == "armv7l" ]]; then
             install_script='/home/pi-apps/apps/Minecraft Java/install-32'
-        elif [[ "$arquitetura" == "aarch64" || "$arquitetura" == "x86_64" ]]; then
+        elif [[ "$$SISTEMA_ARCH" == "aarch64" || "$$SISTEMA_ARCH" == "x86_64" ]]; then
             install_script='/home/pi-apps/apps/Minecraft Java/install-64'
         else
             install_script='/home/pi-apps/apps/Minecraft Java/install'
@@ -265,16 +265,16 @@ main() {
         if [ -f "$install_script" ]; then
             bash "$install_script"
         else
-            print_log "$(log_error)" "$(echo_red "ERRO: Script de instalação do Minecraft não encontrado para a arquitetura $arquitetura.")"
+            print_log "$(log_error)" "$(echo_red "ERRO: Script de instalação do Minecraft não encontrado para a arquitetura $$SISTEMA_ARCH.")"
         fi
     fi
 
     if [[ "$pi_apps_programas" =~ .*[Vv][Ii][Vv][Aa][Ll][Dd][Ii].* ]]; then
         print_log "$(log_aviso)" "$(echo_red "INSTALANDO VIVALDI")"
         local install_script
-        if [[ "$arquitetura" == "armv6l" || "$arquitetura" == "armv7l" ]]; then
+        if [[ "$$SISTEMA_ARCH" == "armv6l" || "$$SISTEMA_ARCH" == "armv7l" ]]; then
             install_script='/home/pi-apps/Vivaldi/install-32'
-        elif [[ "$arquitetura" == "aarch64" || "$arquitetura" == "x86_64" ]]; then
+        elif [[ "$$SISTEMA_ARCH" == "aarch64" || "$$SISTEMA_ARCH" == "x86_64" ]]; then
             install_script='/home/pi-apps/Vivaldi/install-64'
         else
             install_script='/home/pi-apps/Vivaldi/install'
@@ -282,7 +282,7 @@ main() {
         if [ -f "$install_script" ]; then
             bash "$install_script"
         else
-            print_log "$(log_error)" "$(echo_red "ERRO: Script de instalação do Vivaldi não encontrado para a arquitetura $arquitetura.")"
+            print_log "$(log_error)" "$(echo_red "ERRO: Script de instalação do Vivaldi não encontrado para a arquitetura $$SISTEMA_ARCH.")"
         fi
     fi
 
