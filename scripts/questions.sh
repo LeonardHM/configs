@@ -55,7 +55,7 @@ coletar_respostas() {
 
     # P:3.0 - install_basic_zsh
     if [[ -z "$install_basic_zsh" || ! "$install_basic_zsh" =~ ^[YyNn]$ ]]; then
-        echo_orange "DESEJA INSTALAR PROGRAMAS BASICOS E ZSH?"
+        echo_orange "DESEJA INSTALAR PROGRAMAS ESSENCIAIS E ZSH?"
         read -p "Digite Y para sim ou N para não: " install_basic_zsh
         echo
         install_basic_zsh=$(echo "$install_basic_zsh" | tr '[:lower:]' '[:upper:]')

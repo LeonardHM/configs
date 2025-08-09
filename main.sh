@@ -188,7 +188,7 @@ main() {
 
     # Instalar programas básicos e Zsh
     if [[ "$install_basic_zsh" =~ ^[Yy]$ ]]; then
-        print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS BÁSICOS")"
+        print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO PROGRAMAS ESSENCIAIS")"
 
         case "$SISTEMA_TIPO" in
             *[Pp][Cc]*)
@@ -201,6 +201,7 @@ main() {
                 ;;
             *[Rr][Aa][Ss][Pp][Bb][Ee][Rr][Rr][Yy]*)
                 apt_update
+                print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS BÁSICOS.")"
                 instalar_programa "${basic_install[@]}"
                 echo
                 func_geral
