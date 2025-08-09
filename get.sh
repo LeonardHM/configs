@@ -21,7 +21,7 @@ echo_yellow() { echo -e "\033[38;5;226m$1\033[0m"; }
 # A função log_error encerra o script com um status de erro.
 log_info() { echo -e "\033[48;5;226m\033[30m[INFO]\033[0m $1"; }
 log_success() { echo -e "\033[48;5;46m\033[30m[SUCESSO]\033[0m $1"; }
-log_error() { echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m $1" >&2; exit 1; }
+log_error() { echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m $1" ; }
 log_aviso() { echo -e "\033[48;5;208m\033[30m[AVISO]\033[0m $1"; }
 
 # --- Nova Função para Combinar Prefixos e Cores ---
