@@ -53,9 +53,9 @@ log_success() {
 
 log_error() {
     if [[ -n "$1" ]]; then
-        echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m $1"
+        echo -e -n "\033[48;5;196m\033[97m[ERRO]\033[0m $1"
     else
-        echo -e "\033[48;5;196m\033[97m[ERRO]\033[0m"
+        echo -e -n "\033[48;5;196m\033[97m[ERRO]\033[0m"
     fi
 }
 
@@ -68,7 +68,7 @@ log_aviso() {
 }
 
 
-# --- Nova Função para Combinar Prefixos e Cores ---
+# --- Função para Combinar Prefixos e Cores ---
 print_log() {
     local prefix="$1"
     local message="$2"
