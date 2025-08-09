@@ -53,14 +53,14 @@ instalar_dependencias() {
         # Se o comando não estiver instalado, instale-o.
         if ! command -v "$cmd" &>/dev/null; then
             print_log "$(log_info)" "$(echo_orange "Instalando $cmd...")"
-            sudo apt-get install -y "$cmd" >/dev/null 2>&1 || log_error "Falha ao instalar $cmd."
+            sudo apt-get install -y "$cmd" >/dev/null 2>&1 || print_log "$(log_error)" "$(echo_red "Falha ao instalar '$cmd'.")"
         fi
     done
 
     # --- NOVO BLOCO DE VERIFICAÇÃO ---
     if [[ "$skip_git" == "true" ]]; then
         if ! command -v git &>/dev/null; then
-            print_log "$(log_error)" "$(echo_red " O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
+            print_log "$(log_error)" "$(echo_red "O Git não está instalado e a instalação foi pulada. O script não pode continuar.")"
             exit 1
         fi
     fi
@@ -73,12 +73,12 @@ configurar_repositorio() {
     print_log "$(log_info)" "$(echo_red "Configurando ambiente de instalação em $INSTALL_BASE_DIR...")"
 
     # Cria o diretório base e ajusta as permissões.
-    sudo mkdir -p "$INSTALL_BASE_DIR" || log_error "Falha ao criar diretório base: $INSTALL_BASE_DIR"
+    sudo mkdir -p "$INSTALL_BASE_DIR" || print_log "$(log_error)" "$(echo_red "Falha ao criar diretório base: '$INSTALL_BASE_DIR'")"
     sudo chown -R "$(id -u):$(id -g)" "$INSTALL_BASE_DIR"
 
     if [ ! -d "$CLONED_REPO_DIR" ]; then
         print_log "$(log_info)" "$(echo_yellow "Clonando o repositório de configurações ($REPO_URL) para $CLONED_REPO_DIR...")"
-        git clone --quiet "$REPO_URL" "$CLONED_REPO_DIR" || log_error "Falha ao clonar o repositório."
+        git clone --quiet "$REPO_URL" "$CLONED_REPO_DIR" || print_log "$(log_error)" "$(echo_red "Falha ao clonar o repositório.")"
     else
         print_log "$(log_info)" "$(echo_yellow "Repositório já existe em $CLONED_REPO_DIR. Atualizando...")"
         (cd "$CLONED_REPO_DIR" && git pull --quiet) || print_log "$(log_aviso)" "$(echo_orange "Falha ao atualizar o repositório. Continuado assim mesmo.")"
