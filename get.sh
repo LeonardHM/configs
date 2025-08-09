@@ -75,7 +75,7 @@ configurar_repositorio() {
 
     # Cria o diretório base e ajusta as permissões.
     sudo mkdir -p "$INSTALL_BASE_DIR" || print_log "$(log_error)" "$(echo_red "Falha ao criar diretório base: $INSTALL_BASE_DIR")"
-    sudo chown -R "$(id -u):$(id -g)" "$INSTALL_BASE_DIR"
+    sudo chown "$(id -u):$(id -g)" "$INSTALL_BASE_DIR"
 
     if [ ! -d "$CLONED_REPO_DIR" ]; then
         print_log "$(log_info)" "$(echo_yellow "Clonando o repositório de configurações ($REPO_URL) para $CLONED_REPO_DIR...")"
