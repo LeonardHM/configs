@@ -60,16 +60,28 @@ rasp_config_vnc() {
         return 1
     }
 
-    if ! pgrep -f "vncserver :1"; then
-        print_log "$(log_info)" "$(echo_orange "Iniciando sessão VNC padrão...")"
-        vncserver :1 -geometry 1024x768 >/dev/null 2>&1
-        print_log "$(log_success)" "$(echo_green "Sessão VNC iniciada na tela :1.")"
-    else
-        print_log "$(log_info)" "$(echo_yellow "Sessão VNC na tela :1 já está em execução.")"
-    fi
+    # Verifica se o VNC Server já está rodando
+    if pgrep -f "vncserver-virtual" > /dev/null; then
+        # Se estiver rodando, obtém o PID e informa ao usuário
+        VNC_PID=$(pgrep -f "vncserver-virtual" | head -n 1)
 
-    print_log "$(log_success)" "$(echo_green "Gerenciamento de VNC concluído.")"
-    print_log "$(log_success)" "$(echo_green "VNC Server ativado com sucesso.")"
+        print_log "$(log_success)" "$(echo_yellow "Sessão VNC já está em execução. PID: $VNC_PID")"
+        print_log "$(log_info)" "$(echo_yellow "Para parar o VNC Server, use o comando: vncserver -kill :1")"
+    else
+        # Se não estiver rodando, inicia o VNC Server
+        print_log "$(log_info)" "$(echo_orange "Iniciando sessão VNC padrão...")"
+        vncserver-virtual :1 -geometry 1024x768 >/dev/null 2>&1
+
+        # Após iniciar, verifica se o processo foi criado com sucesso e obtém o PID
+        if pgrep -f "vncserver-virtual" > /dev/null; then
+            VNC_PID=$(pgrep -f "vncserver-virtual" | head -n 1)
+            print_log "$(log_success)" "$(echo_green "Sessão VNC iniciada na tela :1. PID: $VNC_PID")"
+            print_log "$(log_info)" "$(echo_yellow "Para parar o VNC Server, use o comando: vncserver -kill :1")"
+        else
+            print_log "$(log_error)" "$(echo_red "Falha ao iniciar a sessão VNC.")"
+            exit 1
+        fi
+    fi
 }
 
 # Função para instalar e ativar um servidor VNC
