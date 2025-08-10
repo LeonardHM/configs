@@ -289,9 +289,9 @@ main() {
     # Ativar SSH
     if [[ "$ativar_ssh" =~ ^[Yy]$ ]]; then
         if [[ "$SISTEMA_TIPO" == "RASPBERRY" ]]; then
-            rasp_config_ssh
+            ssh_rasp_config
         else
-            gerenciar_ssh
+            ssh_others
         fi
     fi
 
