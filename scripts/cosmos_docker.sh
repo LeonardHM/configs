@@ -9,7 +9,7 @@ install_docker() {
 
     # Executar todas as etapas de instalação em um único processo em segundo plano
     {
-        print_log "$(log_aviso)" "$(echo_orange "Configurando o repositório Docker...")"
+        print_log "$(log_aviso)" "$(echo_orange "Configurando o repositório e instalando pacotes Docker...")"
         local REPO_URL="https://download.docker.com/linux/$DISTRO_NAME"
         local REPO_FILE="/etc/apt/sources.list.d/docker.list"
         local REPO_ENTRY="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $REPO_URL $DISTRO_CODENAME stable"
@@ -25,7 +25,6 @@ install_docker() {
             apt_update >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao atualizar o apt após a configuração do repositório.")" && exit 1; }
         fi
 
-        print_log "$(log_aviso)" "$(echo_orange "Instalando pacotes Docker...")"
         local packages="docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
         apt_update >/dev/null 2>&1 && instalar_programa $packages >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar pacotes do Docker.")" && exit 1; }
 

@@ -132,7 +132,8 @@ main() {
             if type -t "$COMMAND" >/dev/null; then
                 print_log "$(log_info)" "$(echo_orange "Modo Expert ativado. Executando função dedicada: '$COMMAND'")"
                 "$COMMAND"
-                print_log "$(log_success)" "$(echo_green "Execução de '$COMMAND' concluída.")"
+                # cada função tem tem seu log de sucesso
+                # print_log "$(log_success)" "$(echo_green "Execução de '$COMMAND' concluída.")"
                 exit 0
             else
                 print_log "$(log_error)" "$(echo_red "Comando desconhecido: '$COMMAND'")"
@@ -160,7 +161,6 @@ main() {
     # EXECUÇÃO DAS FUNÇÕES COM BASE NAS VARIÁVEIS
     # ===============================================
     print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
-    echo
     echo
 
     # Conectar e configurar Wi-Fi
@@ -288,7 +288,6 @@ main() {
 
     # Ativar SSH
     if [[ "$ativar_ssh" =~ ^[Yy]$ ]]; then
-        detectar_sistema
         if [[ "$SISTEMA_TIPO" == "RASPBERRY" ]]; then
             rasp_config_ssh
         else
@@ -298,7 +297,6 @@ main() {
 
     # Ativar VNC
     if [[ "$ativar_vnc" =~ ^[Yy]$ ]]; then
-        detectar_sistema
         if [[ "$SISTEMA_TIPO" == "RASPBERRY" ]]; then
             rasp_config_vnc
         else

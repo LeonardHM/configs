@@ -59,6 +59,16 @@ rasp_config_vnc() {
         print_log "$(log_error)" "$(echo_red "ERRO: Falha ao ativar VNC Server via raspi-config.")"
         return 1
     }
+
+    if ! pgrep -f "vncserver :1"; then
+        print_log "$(log_info)" "$(echo_orange "Iniciando sessão VNC padrão...")"
+        vncserver :1 -geometry 1024x768 >/dev/null 2>&1
+        print_log "$(log_success)" "$(echo_green "Sessão VNC iniciada na tela :1.")"
+    else
+        print_log "$(log_info)" "$(echo_yellow "Sessão VNC na tela :1 já está em execução.")"
+    fi
+
+    print_log "$(log_success)" "$(echo_green "Gerenciamento de VNC concluído.")"
     print_log "$(log_success)" "$(echo_green "VNC Server ativado com sucesso.")"
 }
 
