@@ -298,9 +298,48 @@ main() {
     # Ativar VNC
     if [[ "$ativar_vnc" =~ ^[Yy]$ ]]; then
         if [[ "$SISTEMA_TIPO" == "RASPBERRY" ]]; then
-            rasp_config_vnc
+            vnc_rasp_config
         else
-            gerenciar_vnc
+            echo_orange "O DISPOSITIVO É UM RASPBERRY? (Y/N)"
+            read -p "Digite Y para sim ou N para não: " is_raspberry
+
+            if [[ "$is_raspberry" =~ ^[Yy]$ ]]; then
+                vnc_rasp_config
+            else
+                if is_installed "realvnc-vnc-server"; then
+                    vnc_others "vncserver-x11-serviced" "realvnc"
+                elif is_installed "tightvncserver"; then
+                    vnc_others "vncserver@1.service" "tightvnc"
+                else
+                    echo_orange "Nenhum servidor VNC está instalado."
+                    echo_orange "Deseja instalar um servidor VNC?"
+                    echo_orange "[1] RealVNC"
+                    echo_orange "[2] TightVNC"
+                    read -p "Escolha 1 ou 2 (ou qualquer outra tecla para sair): " vnc_choice
+
+                    case "$vnc_choice" in
+                        1)
+                            print_log "$(log_info)" "$(echo_orange "Instalando RealVNC...")"
+                            instalar_programa "realvnc-vnc-server" || {
+                                print_log "$(log_error)" "$(echo_red "Falha ao instalar RealVNC.")"
+                                exit 1
+                            }
+                            vnc_others "vncserver-x11-serviced" "realvnc"
+                            ;;
+                        2)
+                            print_log "$(log_info)" "$(echo_orange "Instalando TightVNC...")"
+                            instalar_programa "tightvncserver" || {
+                                print_log "$(log_error)" "$(echo_red "Falha ao instalar TightVNC.")"
+                                exit 1
+                            }
+                            vnc_others "vncserver@1.service" "tightvnc"
+                            ;;
+                        *)
+                            print_log "$(log_info)" "$(echo_yellow "Nenhum servidor VNC será instalado.")"
+                            ;;
+                    esac
+                fi
+            fi
         fi
     fi
 
