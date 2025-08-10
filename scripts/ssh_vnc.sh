@@ -5,9 +5,11 @@ ssh_rasp_config() {
     print_log "$(log_aviso)" "$(echo_red "ATIVANDO SSH via raspi-config")"
     sudo raspi-config nonint do_ssh 0 >/dev/null 2>&1 || {
         print_log "$(log_error)" "$(echo_red "ERRO: Falha ao ativar SSH via raspi-config.")"
+        echo
         return 1
     }
     print_log "$(log_success)" "$(echo_green "SSH ativado com sucesso.")"
+    echo
 }
 
 # Função para ativar um servidor SSH, instalando se necessário.
@@ -21,6 +23,7 @@ ssh_others() {
         apt_update >/dev/null 2>&1
         instalar_programa openssh-server >/dev/null 2>&1 || {
             print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar openssh-server.")"
+            echo
             return 1
         }
         print_log "$(log_success)" "$(echo_green "openssh-server instalado com sucesso.")"
@@ -32,16 +35,19 @@ ssh_others() {
         print_log "$(log_info)" "$(echo_orange "Iniciando e habilitando o serviço SSH...")"
         sudo systemctl enable --now ssh >/dev/null 2>&1 || {
             print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar e habilitar o serviço SSH.")"
+            echo
             return 1
         }
         if systemctl is-active --quiet ssh; then
             print_log "$(log_success)" "$(echo_green "Serviço SSH ativado com sucesso.")"
         else
             print_log "$(log_error)" "$(echo_red "Falha ao ativar o SSH.")"
+            echo
             return 1
         fi
     fi
     print_log "$(log_success)" "$(echo_green "Gerenciamento de SSH concluído.")"
+    echo
 }
 
 
@@ -115,6 +121,7 @@ gerenciar_sessao_vnc() {
     # 8. Exibe status final
     print_log "$(log_success)" "$(echo_green "Sessão VNC iniciada usando ($vnc_method) em: $vnc_ip, PID: $vnc_pid")"
     print_log "$(log_info)" "$(echo_yellow "Para parar o VNC Server: vncserver -kill :1 ou sudo kill $vnc_pid")"
+    echo
 }
 
 # Ativa o VNC via raspi-config e chama gerenciador
