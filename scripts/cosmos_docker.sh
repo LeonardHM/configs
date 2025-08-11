@@ -97,6 +97,7 @@ cloudflare_tunnel() {
     fi
 }
 
+
 install_cosmos() {
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO COSMOS CLOUD...")"
 
@@ -107,6 +108,17 @@ install_cosmos() {
 
     # Executar todas as etapas de instalação em um único processo em segundo plano
     {
+
+
+        # Define as variáveis do debconf para iptables-persistent
+        sudo debconf-set-selections <<EOF >/dev/null 2>&1
+        iptables-persistent iptables-persistent/autosave_v4 boolean true
+        iptables-persistent iptables-persistent/autosave_v6 boolean true
+EOF
+
+        instalar_programa "${server_install[@]}"
+
+
         # Instalar MergerFS
         local MERGERFS_VERSION="2.40.2"
         local DEB_NAME="mergerfs_${MERGERFS_VERSION}.${DISTRO_NAME}-${DISTRO_CODENAME}_${SISTEMA_ARCH}.deb"
@@ -124,16 +136,15 @@ install_cosmos() {
         sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao configurar regra do firewall (porta 443).")" && exit 1; }
         sudo iptables -A INPUT -p udp --dport 4242 -j ACCEPT || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao configurar regra do firewall (porta 4242).")" && exit 1; }
         sudo iptables-save > /etc/iptables/rules.v4 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao salvar regras do firewall.")" && exit 1; }
-        systemctl start avahi-daemon >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar avahi-daemon.")" && exit 1; }
-        systemctl enable avahi-daemon >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao habilitar avahi-daemon.")" && exit 1; }
+        systemctl enable --now avahi-daemon >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar/habilitar avahi-daemon.")" && exit 1; }
 
         # Download e verificação do binário do Cosmos
         local LATEST_RELEASE=$(curl -s https://api.github.com/repos/azukaar/Cosmos-Server/releases/latest | grep "tag_name" | cut -d '"' -f 4)
         local ZIP_FILE="cosmos-cloud-${LATEST_RELEASE#v}-${SISTEMA_ARCH}.zip"
 
         sudo mkdir -p /opt/cosmos || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar diretório /opt/cosmos.")" && exit 1; }
-        curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar binário do Cosmos.")" && exit 1; }
-        curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}.md5" -o "/tmp/${ZIP_FILE}.md5" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar o arquivo MD5.")" && exit 1; }
+        curl -sSL --http1.1 --retry 5 --retry-delay 5 "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar binário do Cosmos.")" && exit 1; }
+        curl -sSL --http1.1 --retry 5 --retry-delay 5 "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}.md5" -o "/tmp/${ZIP_FILE}.md5" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar o arquivo MD5.")" && exit 1; }
 
         cd /tmp
         if ! md5sum -c "${ZIP_FILE}.md5" >/dev/null 2>&1; then
@@ -165,6 +176,7 @@ install_cosmos() {
 
 servidor_config() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO A CONFIGURAÇÃO DO SERVIDOR COSMOS...")"
+    echo
 
     local instalacao_completa=true
 
@@ -174,6 +186,7 @@ servidor_config() {
         instalacao_completa=false
     else
         print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
+        echo
     fi
 
     # B. Verificação e Instalação do Cosmos
