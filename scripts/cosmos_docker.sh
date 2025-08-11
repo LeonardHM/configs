@@ -100,6 +100,7 @@ cloudflare_tunnel() {
 
 install_cosmos() {
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO COSMOS CLOUD...")"
+    echo
 
     if [ -z "$SISTEMA_ARCH" ] || [ "$SISTEMA_ARCH" = "desconhecido" ]; then
         print_log "$(log_error)" "$(echo_red "ERRO: A arquitetura do sistema não foi detectada. Execute 'detectar_sistema' primeiro.")"
@@ -107,7 +108,7 @@ install_cosmos() {
     fi
 
     # Executar todas as etapas de instalação em um único processo em segundo plano
-    #{
+    {
 
 
         # Define as variáveis do debconf para iptables-persistent
@@ -170,12 +171,17 @@ EOF
         sudo rm -f "${ZIP_FILE}" "${ZIP_FILE}.md5"
 
         # Instalar e iniciar o serviço do Systemd
-        cd /opt/cosmos
-        sudo ./cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
-        sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao recarregar o Systemd.")" && exit 1; }
-        sudo systemctl start CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
+        if systemctl list-unit-files | grep -q "^CosmosCloud.service"; then
+            print_status "Serviço CosmosCloud já existe. Pulando instalação..."
+        else
+            sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
+        fi
 
-    #} & # Executar tudo em um único processo em segundo plano
+        sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao recarregar o Systemd.")" && exit 1; }
+        sudo systemctl enable --now CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
+
+
+    } & # Executar tudo em um único processo em segundo plano
 
     local pid=$!
 
