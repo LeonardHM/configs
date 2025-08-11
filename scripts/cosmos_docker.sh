@@ -107,7 +107,7 @@ install_cosmos() {
     fi
 
     # Executar todas as etapas de instalação em um único processo em segundo plano
-    {
+    #{
 
 
         # Define as variáveis do debconf para iptables-persistent
@@ -162,7 +162,7 @@ EOF
         sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao recarregar o Systemd.")" && exit 1; }
         sudo systemctl start CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
 
-    } & # Executar tudo em um único processo em segundo plano
+    #} & # Executar tudo em um único processo em segundo plano
 
     local pid=$!
 
