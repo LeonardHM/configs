@@ -13,7 +13,7 @@ ask_questions() {
     fi
 
     for ((i=tentativas; i>0; i--)); do
-        echo_orange "$mensagem (Y/N): "
+        echo_orange "$mensagem (Y/N):"
         read -r resposta
         resposta=$(echo "$resposta" | tr '[:lower:]' '[:upper:]')
 

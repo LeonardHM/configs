@@ -51,6 +51,28 @@ source "$SCRIPTS_FOLDER/wifi_eth_pihole.sh"
 
 detectar_sistema
 
+
+# Array com as variáveis que indicam ações de instalação / execução
+vars_de_acao=(
+  conectar_wifi
+  compartilhar_internet_lan
+  instalar_pi_hole
+  update_system
+  install_basic_zsh
+  install_theme
+  ativar_ssh
+  ativar_vnc
+  habilitar_tft
+  drive
+  alexa_commands
+  cosmos
+  mine_server
+  reiniciar
+)
+
+
+
+
 # --- Função Principal de Execução ---
 main() {
     # Inicializa variáveis para o novo fluxo
@@ -67,9 +89,6 @@ main() {
             "--expert") EXPERT_MODE=true ;;
             "--fast") FAST_MODE=true ;;
             # Variáveis de configuração
-            --conectar_wifi=*) conectar_wifi="${arg#*=}" ;;
-            --compartilhar_internet_lan=*) compartilhar_internet_lan="${arg#*=}" ;;
-            --instalar_pi_hole=*) instalar_pi_hole="${arg#*=}" ;;
             --WIFI_CONFIGS=*)
                 IFS=',' read -ra WIFI_CONFIGS <<< "${arg#*=}"
                 ;;
@@ -96,6 +115,9 @@ main() {
                 IFS=',' read -ra CONTAINERS_PARA_MONITORAR <<< "${arg#*=}"
                 ;;
             # Variáveis de perguntas
+            --conectar_wifi=*) conectar_wifi="${arg#*=}" ;;
+            --compartilhar_internet_lan=*) compartilhar_internet_lan="${arg#*=}" ;;
+            --instalar_pi_hole=*) instalar_pi_hole="${arg#*=}" ;;
             --update_system=*) update_system="${arg#*=}" ;;
             --install_basic_zsh=*) install_basic_zsh="${arg#*=}" ;;
             --install_theme=*) install_theme="${arg#*=}" ;;
@@ -157,11 +179,32 @@ main() {
         coletar_respostas
     fi
 
+
+
+    alguma_acao=false
+    for var in "${vars_de_acao[@]}"; do
+        val="${!var}"
+        if [[ "$val" =~ ^[Yy]$ ]]; then
+            alguma_acao=true
+            break
+        fi
+    done
+
+    if $alguma_acao; then
+        print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
+        echo
+    else
+        print_log "$(log_info)" "$(echo_green "Nenhuma ação selecionada para executar. Saindo...")"
+        exit 0
+    fi
+
+
+
     # ===============================================
     # EXECUÇÃO DAS FUNÇÕES COM BASE NAS VARIÁVEIS
     # ===============================================
-    print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
-    echo
+    #print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
+    #echo
 
     # Conectar e configurar Wi-Fi
     if [[ "$conectar_wifi" =~ ^[Yy]$ ]]; then
