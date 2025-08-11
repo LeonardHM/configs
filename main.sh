@@ -153,6 +153,7 @@ main() {
         if [[ "$EXPERT_MODE" == true ]]; then
             if type -t "$COMMAND" >/dev/null; then
                 print_log "$(log_info)" "$(echo_orange "Modo Expert ativado. Executando função dedicada: '$COMMAND'")"
+                echo
                 "$COMMAND"
                 # cada função tem tem seu log de sucesso
                 # print_log "$(log_success)" "$(echo_green "Execução de '$COMMAND' concluída.")"
@@ -191,6 +192,7 @@ main() {
     done
 
     if $alguma_acao; then
+        echo
         print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
         echo
     else
