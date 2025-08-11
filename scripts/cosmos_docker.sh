@@ -173,6 +173,7 @@ EOF
         if systemctl list-unit-files | grep -q "^CosmosCloud.service"; then
             print_status "Serviço CosmosCloud já existe. Pulando instalação..."
         else
+            # aparentemente exibe como erro mesmo tendo funcionado
             sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
         fi
 
