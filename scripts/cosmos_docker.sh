@@ -231,8 +231,8 @@ servidor_config() {
     # Verificar se o contêiner do Home Assistant existe para a configuração
     if ! docker ps -a --format "{{.Names}}" | grep -q "Home-Assistant"; then
         echo "====================================================="
-        print_log "$(log_error)" "$(echo_red "INFORMAÇÃO IMPORTANTE:")"
-        print_log "$(log_error)" "$(echo_red "Não foi possível detectar o contêiner 'Home-Assistant'.")"
+        echo_red "          INFORMAÇÃO IMPORTANTE:"
+        print_log "$(log_info)" "$(echo_red "Não foi possível detectar o contêiner 'Home-Assistant'.")"
         echo "Por favor, instale-o manualmente para que a configuração possa ser concluída."
         echo "====================================================="
         return 0
