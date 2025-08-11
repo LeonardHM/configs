@@ -13,7 +13,7 @@ ask_questions() {
     fi
 
     for ((i=tentativas; i>0; i--)); do
-        echo_orange "$mensagem (Y/N) [Padrão: N]: "
+        echo_orange "$mensagem (Y/N): "
         read -r resposta
         resposta=$(echo "$resposta" | tr '[:lower:]' '[:upper:]')
 
@@ -23,7 +23,6 @@ ask_questions() {
 
         if [[ "$resposta" =~ ^[YN]$ ]]; then
             eval "$var_name='$resposta'"
-            echo
             return
         else
             echo_red "Resposta inválida. Por favor, digite Y ou N."
@@ -48,13 +47,23 @@ coletar_respostas() {
     # P:2.0 COMPARTILHAR INTERNET POR ETH0
     ask_questions compartilhar_internet_lan "DESEJA COMPARTILHAR INTERNET POR ETH0?"
 
+    # P:2.1 COMPARTILHAR INTERNET POR ETH0 E INSTALAR PI-HOLE
     if [[ "$compartilhar_internet_lan" =~ ^[Yy]$ ]]; then
-        # P:2.1 COMPARTILHAR INTERNET POR ETH0 E INSTALAR PI-HOLE
+
         ask_questions instalar_pi_hole "DESEJA INSTALAR PI-HOLE?"
     fi
 
     # P:3.0 ATUALIZAR SISTEMA
-    ask_questions update_system "ESSE SCRIPT NECESSITA DE UM SISTEMA ATUALIZADO. Deseja atualizar programas e sistema?"
+    if [[ -z "$update_system" || ! "$update_system" =~ ^[YyNn]$ ]]; then
+        echo_red "ESSE SCRIPT NECESSITA DE UM SISTEMA ATUALIZADO."
+        read -p "Digite Y para atualizar programas e sistema ou N para continuar: " update_system
+        echo
+        update_system=$(echo "$update_system" | tr '[:lower:]' '[:upper:]')
+        update_system=${update_system:-N}
+    else
+        print_log "$(log_info)" "$(echo_yellow "RESPOSTA PARA 'update_system' JÁ DEFINIDA: '$update_system'. PULANDO PERGUNTA.")"
+        echo
+    fi
 
     # P:4.0 INSTALAR PROGRAMAS ESSENCIAIS E ZSH
     ask_questions install_basic_zsh "DESEJA INSTALAR PROGRAMAS ESSENCIAIS E ZSH?"
