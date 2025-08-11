@@ -107,19 +107,18 @@ install_cosmos() {
         return 1
     fi
 
-    # Executar todas as etapas de instalação em um único processo em segundo plano
-    {
 
-
-        # Define as variáveis do debconf para iptables-persistent
-        sudo debconf-set-selections <<EOF >/dev/null 2>&1
-        iptables-persistent iptables-persistent/autosave_v4 boolean true
-        iptables-persistent iptables-persistent/autosave_v6 boolean true
+    # Define as variáveis do debconf para iptables-persistent
+    sudo debconf-set-selections <<EOF >/dev/null 2>&1
+    iptables-persistent iptables-persistent/autosave_v4 boolean true
+    iptables-persistent iptables-persistent/autosave_v6 boolean true
 EOF
 
-        instalar_programa "${server_install[@]}"
+    instalar_programa "${server_install[@]}"
 
 
+    # Executar todas as etapas de instalação em um único processo em segundo plano
+    {
         # Instalar MergerFS
         local MERGERFS_VERSION="2.40.2"
         local DEB_NAME="mergerfs_${MERGERFS_VERSION}.${DISTRO_NAME}-${DISTRO_CODENAME}_${SISTEMA_ARCH}.deb"
@@ -219,7 +218,7 @@ servidor_config() {
     # C. Etapa de Configuração: Só prossegue se ambos os serviços estiverem instalados.
     if [ "$instalacao_completa" = false ]; then
         echo "====================================================="
-        print_log "$(log_error)" "$(echo_red "INFORMAÇÃO IMPORTANTE:")"
+        echo_red "         INFORMAÇÃO IMPORTANTE"
         echo "A instalação do Docker e do Cosmos foram concluídas."
         echo "Para continuar a configuração, por favor, instale o Home Assistant ou outros"
         echo "contêineres manualmente e, em seguida, execute este script novamente."
