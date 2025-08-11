@@ -140,8 +140,8 @@ sudo -E bash get.sh --expert config_zsh
 | :--- | :--- |
 | `uninstall_triggercmd` | Desinstalar TriggerCMD. |
 | `config_zsh` | Instala e Configura o ZSN. |
-| `docker` | Instala o Docker. |
-| `cloudflare` | Instala Docker e Cloudflare-Tunnel. |
+| `install_docker` | Instala o Docker. |
+| `cloudflare_tunnel` | Instala Docker e Cloudflare-Tunnel. |
 | `configurar_home_assistant` | Configura HA (HACS, configuration.yaml, etc.) |
 | `install_monitor` | Instala e configura o monitoramento do Docker e MQTT. |
 

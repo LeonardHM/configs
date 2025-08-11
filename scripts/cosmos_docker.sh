@@ -58,36 +58,38 @@ EOF
     fi
 
     print_log "$(log_aviso)" "$(echo_red "VERIFICANDO CLOUDFLARE TUNNEL")"
-    # Verifica se já existe QUALQUER container cloudflared rodando
-    if sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" | grep -q .; then
-        if sudo docker ps --filter "ancestor=cloudflare/cloudflared:latest" | grep -q .; then
+
+    # Verifica se existe um contêiner do Cloudflare Tunnel
+    if sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
+        # Se existe, verifica se ele está rodando
+        if sudo docker ps --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
             print_log "$(log_success)" "$(echo_green "Cloudflare Tunnel já está instalado e rodando.")"
         else
             print_log "$(log_aviso)" "$(echo_orange "Cloudflare Tunnel instalado, mas não está rodando. Reiniciando...")"
-            # Pega o ID do primeiro container cloudflared e inicia
-            sudo docker start $(sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" -q | head -n1) >/dev/null 2>&1
+            # Pega o ID do contêiner e o inicia
+            sudo docker start $(sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | head -n 1) >/dev/null 2>&1
+            print_log "$(log_info)" "$(echo_yellow "Cloudflare Tunnel instalado, mas não está rodando. Reiniciando...")"
         fi
-        return 0
-    fi
-
-    # Se não encontrou nenhuma instância, instala uma nova
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
-    exec 3>&1
-    {
-        sudo docker run -d \
-            --name cloudflared-tunnel \
-            --restart always \
-            cloudflare/cloudflared:latest \
-            tunnel --no-autoupdate run --token "$CLOUDFLARE_TOKEN" \
-            >/dev/null 2>&1
-    } 2>&1 &
-    local pid=$!
-
-    if show_progress "CONFIGURANDO CLOUDFLARE TUNNEL..." $pid; then
-        print_log "$(log_success)" "$(echo_green "CLOUDFLARE TUNNEL INSTALADO COM SUCESSO!")"
     else
-        print_log "$(log_error)" "$(echo_red "ERRO AO INSTALAR CLOUDFLARE TUNNEL")"
-        return 1
+        # Se não encontrou nenhuma instância, instala uma nova
+        print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
+        exec 3>&1
+        {
+            sudo docker run -d \
+                --name cloudflared-tunnel \
+                --restart always \
+                cloudflare/cloudflared:latest \
+                tunnel --no-autoupdate run --token "$CLOUDFLARE_TOKEN" \
+                >/dev/null 2>&1
+        } 2>&1 &
+        local pid=$!
+
+        if show_progress "CONFIGURANDO CLOUDFLARE TUNNEL..." $pid; then
+            print_log "$(log_success)" "$(echo_green "CLOUDFLARE TUNNEL INSTALADO COM SUCESSO!")"
+        else
+            print_log "$(log_error)" "$(echo_red "ERRO AO INSTALAR CLOUDFLARE TUNNEL")"
+            return 1
+        fi
     fi
 }
 
