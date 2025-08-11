@@ -1,5 +1,6 @@
 install_docker() {
-    print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO DO DOCKER...")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO DOCKER...")"
+    echo
 
     # 1. Verificar se a arquitetura e a distro são suportadas
     if [[ "$SISTEMA_TIPO" == "termux" || "$SISTEMA_TIPO" == "desconhecido" ]]; then
@@ -7,9 +8,26 @@ install_docker() {
         return 1
     fi
 
+
+   # Verifica a instalação do Docker
+    if ! command -v docker &> /dev/null; then
+
+        # Define as variáveis do debconf para iptables-persistent
+        sudo debconf-set-selections <<EOF >/dev/null 2>&1
+        iptables-persistent iptables-persistent/autosave_v4 boolean true
+        iptables-persistent iptables-persistent/autosave_v6 boolean true
+EOF
+
+        instalar_programa "${server_install[@]}"
+    else
+        print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
+        echo
+    fi
+
+
+
     # Executar todas as etapas de instalação em um único processo em segundo plano
     {
-        print_log "$(log_aviso)" "$(echo_orange "Configurando o repositório e instalando pacotes Docker...")"
         local REPO_URL="https://download.docker.com/linux/$DISTRO_NAME"
         local REPO_FILE="/etc/apt/sources.list.d/docker.list"
         local REPO_ENTRY="deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] $REPO_URL $DISTRO_CODENAME stable"
@@ -33,6 +51,7 @@ install_docker() {
 
     if show_progress "INSTALANDO DOCKER..." $pid; then
         print_log "$(log_success)" "$(echo_green "DOCKER INSTALADO COM SUCESSO!")"
+        echo
     else
         print_log "$(log_error)" "$(echo_red "A instalação do Docker falhou em uma das etapas.")"
         return 1
@@ -41,22 +60,7 @@ install_docker() {
 
 cloudflare_tunnel() {
 
-    # Verifica a instalação do Docker
-    print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO DO DOCKER...")"
-    if ! command -v docker &> /dev/null; then
-
-        # Define as variáveis do debconf para iptables-persistent
-        sudo debconf-set-selections <<EOF >/dev/null 2>&1
-        iptables-persistent iptables-persistent/autosave_v4 boolean true
-        iptables-persistent iptables-persistent/autosave_v6 boolean true
-EOF
-
-        instalar_programa "${server_install[@]}"
-        install_docker
-        instalacao_completa=false
-    else
-        print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
-    fi
+    install_docker
 
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
 
@@ -94,7 +98,7 @@ EOF
 }
 
 install_cosmos() {
-    print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO DO COSMOS CLOUD...")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO COSMOS CLOUD...")"
 
     if [ -z "$SISTEMA_ARCH" ] || [ "$SISTEMA_ARCH" = "desconhecido" ]; then
         print_log "$(log_error)" "$(echo_red "ERRO: A arquitetura do sistema não foi detectada. Execute 'detectar_sistema' primeiro.")"
@@ -161,21 +165,12 @@ install_cosmos() {
 
 servidor_config() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO A CONFIGURAÇÃO DO SERVIDOR COSMOS...")"
-    detectar_sistema
 
     local instalacao_completa=true
 
     # A. Verificação e Instalação do Docker
     if ! command -v docker &> /dev/null; then
-
-        # Define as variáveis do debconf para iptables-persistent
-        sudo debconf-set-selections <<EOF >/dev/null 2>&1
-        iptables-persistent iptables-persistent/autosave_v4 boolean true
-        iptables-persistent iptables-persistent/autosave_v6 boolean true
-EOF
-
-        instalar_programa "${server_install[@]}"
-        install_docker
+        cloudflare_tunnel
         instalacao_completa=false
     else
         print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
@@ -183,7 +178,6 @@ EOF
 
     # B. Verificação e Instalação do Cosmos
     if [ ! -f "/opt/cosmos/cosmos" ]; then
-
         install_cosmos
         instalacao_completa=false
     else
@@ -194,7 +188,7 @@ EOF
     if [ "$instalacao_completa" = false ]; then
         echo "====================================================="
         print_log "$(log_error)" "$(echo_red "INFORMAÇÃO IMPORTANTE:")"
-        echo "A instalação do Docker e/ou Cosmos foi concluída."
+        echo "A instalação do Docker e do Cosmos foram concluídas."
         echo "Para continuar a configuração, por favor, instale o Home Assistant ou outros"
         echo "contêineres manualmente e, em seguida, execute este script novamente."
         echo "====================================================="

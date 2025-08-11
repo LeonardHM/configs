@@ -416,7 +416,6 @@ main() {
     # Configurar Servidor Cosmos
     if [[ $cosmos =~ ^[Yy]$ ]]; then
         servidor_config
-        cloudflare_tunnel
     fi
 
     # Configurar Servidor de Minecraft
