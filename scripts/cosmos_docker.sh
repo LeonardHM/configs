@@ -42,6 +42,7 @@ install_docker() {
 cloudflare_tunnel() {
 
     # Verifica a instalação do Docker
+    print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO DO DOCKER...")"
     if ! command -v docker &> /dev/null; then
 
         # Define as variáveis do debconf para iptables-persistent
@@ -57,7 +58,7 @@ EOF
         print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
     fi
 
-    print_log "$(log_aviso)" "$(echo_red "VERIFICANDO CLOUDFLARE TUNNEL")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
 
     # Verifica se existe um contêiner do Cloudflare Tunnel
     if sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
@@ -72,7 +73,6 @@ EOF
         fi
     else
         # Se não encontrou nenhuma instância, instala uma nova
-        print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
         exec 3>&1
         {
             sudo docker run -d \
