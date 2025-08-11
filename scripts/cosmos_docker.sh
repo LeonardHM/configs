@@ -113,7 +113,7 @@ install_cosmos() {
         local DEB_URL="https://github.com/trapexit/mergerfs/releases/download/${MERGERFS_VERSION}/${DEB_NAME}"
 
         if ! [ -f "/tmp/$DEB_NAME" ]; then
-            wget "$DEB_URL" -O "/tmp/$DEB_NAME"
+            wget -q "$DEB_URL" -O "/tmp/$DEB_NAME"
         fi
 
         sudo dpkg -i "/tmp/$DEB_NAME" >/dev/null 2>&1 || sudo apt-get install -f -y >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar o MergerFS.")" && exit 1; }
@@ -132,8 +132,8 @@ install_cosmos() {
         local ZIP_FILE="cosmos-cloud-${LATEST_RELEASE#v}-${SISTEMA_ARCH}.zip"
 
         sudo mkdir -p /opt/cosmos || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar diretório /opt/cosmos.")" && exit 1; }
-        curl -L "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar binário do Cosmos.")" && exit 1; }
-        curl -L "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}.md5" -o "/tmp/${ZIP_FILE}.md5" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar o arquivo MD5.")" && exit 1; }
+        curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar binário do Cosmos.")" && exit 1; }
+        curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}.md5" -o "/tmp/${ZIP_FILE}.md5" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar o arquivo MD5.")" && exit 1; }
 
         cd /tmp
         if ! md5sum -c "${ZIP_FILE}.md5" >/dev/null 2>&1; then
@@ -141,7 +141,7 @@ install_cosmos() {
             exit 1
         fi
 
-        sudo unzip -o "${ZIP_FILE}" -d /opt/cosmos >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao extrair o binário do Cosmos.")" && exit 1; }
+        sudo unzip -oq "${ZIP_FILE}" -d /opt/cosmos >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao extrair o binário do Cosmos.")" && exit 1; }
         sudo chmod +x /opt/cosmos/cosmos || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao definir permissões do binário.")" && exit 1; }
         sudo rm -f "${ZIP_FILE}" "${ZIP_FILE}.md5"
 
