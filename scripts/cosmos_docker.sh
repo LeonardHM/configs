@@ -213,28 +213,29 @@ servidor_config() {
         instalacao_completa=false
     else
         print_log "$(log_success)" "$(echo_green "Cosmos Cloud já está instalado.")"
+        echo
     fi
 
     # C. Etapa de Configuração: Só prossegue se ambos os serviços estiverem instalados.
     if [ "$instalacao_completa" = false ]; then
-        echo "====================================================="
-        echo_red "         INFORMAÇÃO IMPORTANTE"
+        echo "================================================================="
+        echo_red "              INFORMAÇÃO IMPORTANTE"
         echo "A instalação do Docker e do Cosmos foram concluídas."
         echo "Para continuar a configuração, por favor, instale o Home Assistant ou outros"
         echo "contêineres manualmente e, em seguida, execute este script novamente."
-        echo "====================================================="
+        echo "================================================================="
         return 0
     fi
 
-    print_log "$(log_success)" "$(echo_green "Serviços principais (Docker e Cosmos) já estão instalados. Prosseguindo para a configuração...")"
+    print_log "$(log_success)" "$(echo_green "Prosseguindo para a configuração...")"
 
     # Verificar se o contêiner do Home Assistant existe para a configuração
     if ! docker ps -a --format "{{.Names}}" | grep -q "Home-Assistant"; then
-        echo "====================================================="
-        echo_red "          INFORMAÇÃO IMPORTANTE:"
+        echo "================================================================="
+        echo_red "              INFORMAÇÃO IMPORTANTE:"
         print_log "$(log_info)" "$(echo_red "Não foi possível detectar o contêiner 'Home-Assistant'.")"
         echo "Por favor, instale-o manualmente para que a configuração possa ser concluída."
-        echo "====================================================="
+        echo "================================================================="
         return 0
     fi
 
