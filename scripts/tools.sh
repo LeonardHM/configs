@@ -217,90 +217,37 @@ apt_update() {
             echo_green "Nenhum pacote precisa ser atualizado."
             echo
         fi
+
+        echo "$upgrade_count"  # retorna como saída da função
     fi
 }
-#curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh --skip_git --expert apt_upgrade && rm get.sh
-#[AVISO] ATUALIZANDO PACOTES E SISTEMA...
-#[INFO] Analisando pacotes...
-#0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-#
-#[✓] Atualizando sistema...
-#[SUCESSO] Sistema atualizado com sucesso.
-#[SUCESSO] Execução de 'apt_upgrade' concluída.
-
-
-
-
-
-
-apt_upgrade2() {
-    print_log "$(log_aviso)" "$(echo_orange "ATUALIZANDO PACOTES E SISTEMA...")"
-
-    # Redireciona a saída do subshell para um arquivo temporário
-    # para capturar possíveis erros, mas não exibe no terminal.
-    local temp_log_file=$(mktemp)
-
-    (
-        # Executa todos os comandos apt em um subshell
-        # Redireciona stdout e stderr para /dev/null para suprimir a saída completa
-        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
-    ) >"$temp_log_file" 2>&1 & # Redireciona o stdout e stderr do subshell para o arquivo temporário
-    local pid=$! # Captura o PID do processo em segundo plano
-
-    # Exibe o spinner enquanto o comando apt é executado em segundo plano
-    if ! show_progress "Atualizando sistema..." "$pid"; then
-        print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Detalhes:")"
-        cat "$temp_log_file" # Imprime o conteúdo do log de erro se houver falha
-        rm "$temp_log_file"
-        return 1
-    fi
-
-    # Se a atualização foi bem-sucedida, remove o arquivo e exibe a mensagem de sucesso
-    rm "$temp_log_file"
-    print_log "$(log_success)" "$(echo_green "Sistema atualizado com sucesso.")"
-    return 0
-}
-#curl -fsSL https://raw.githubusercontent.com/LeonardHM/configs/refs/heads/caceta/get.sh -o get.sh && sudo -E bash get.sh --skip_git --expert apt_upgrade2 && rm get.sh
-#[AVISO] ATUALIZANDO PACOTES E SISTEMA...
-#
-#[✓] Atualizando sistema...
-#[SUCESSO] Sistema atualizado com sucesso.
-#[SUCESSO] Execução de 'apt_upgrade2' concluída.
-
-
-
-
 
 
 apt_upgrade() {
-    print_log "$(log_aviso)" "$(echo_orange "ATUALIZANDO PACOTES E SISTEMA...")"
+    local upgrade_count="$1"
 
-    # Primeiro, exibe o resumo da atualização sem o -y
-    # Isso permite que o usuário veja o que será feito antes da execução real.
-    print_log "$(log_info)" "$(echo_yellow "Analisando pacotes...")"
-    sudo apt upgrade --assume-no 2>&1 | grep "upgraded," || true
-    
-    # Executa o processo de atualização de forma silenciosa em segundo plano.
+    if [[ "$upgrade_count" -le 0 ]]; then
+        echo_green "Nada a atualizar."
+        return 0
+    fi
+
+    sudo apt upgrade --assume-no | grep -E "removido|remove" || true
+
     (
-        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
+        sudo apt upgrade -y -qq > /dev/null && \
+        sudo apt full-upgrade -y -qq > /dev/null && \
+        sudo apt dist-upgrade -y -qq > /dev/null
     ) &
     local pid=$!
 
-    # A função show_progress rodará em paralelo, mostrando o spinner.
     if ! show_progress "Atualizando sistema..." "$pid"; then
         print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
         return 1
     fi
 
-    # Se a execução chegar aqui, a atualização foi um sucesso.
     print_log "$(log_success)" "$(echo_green "Sistema atualizado com sucesso.")"
     return 0
 }
-
 
 
 is_installed() {

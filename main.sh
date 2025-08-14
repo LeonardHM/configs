@@ -6,6 +6,9 @@ SINCE_DATE="01/09/2021"
 CURRENT_DATE="08/08/2025"
 CREATOR="LeonardHM"
 
+
+configurar para quando passar wifi ou cloudflare, se não for encontrado as variaveis de configuração referente, que diga ao usuario que não encontrou e pergunta se quer passar manualmente
+
 # =============================================================================
 
 ### USE ESSES COMANDOS MANUALMENTE EM CASO DE ERROS ###
@@ -226,9 +229,13 @@ main() {
 
     # Atualizar o sistema
     if [[ "$update_system" =~ ^[Yy]$ ]]; then
-        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO O SISTEMA")"
-        apt_update
-        apt_upgrade
+        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA")"
+
+        local upgrade_count
+        upgrade_count=$(apt_update)
+
+        apt_upgrade "$upgrade_count"
+        echo
     fi
 
     # Instalar programas básicos e Zsh

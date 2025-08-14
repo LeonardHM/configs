@@ -112,7 +112,7 @@ sudo -E bash get.sh --expert config_zsh
 
 | Variável | Valor | Exemplo | Descrição |
 | :--- | :--- | :--- | :--- |
-| `--WIFI_CONFIGS` | `<SSID:PSK:PRIORITY>,<SSID:PSK:PRIORITY>` | `"teSt1:123456789:7,test2-5G:abcdef:9"` | Define as redes Wi-Fi a serem configuradas. |
+| `--WIFI_CONFIGS` | `""<SSID:PSK:PRIORITY>","<SSID:PSK:PRIORITY>""` | `""teSt1:123456789:7","test2-5G:abcdef:9""` | Define as redes Wi-Fi a serem configuradas. |
 | `--WIFI_IP_ADDRESS` | `<IP/CIDR>` | `192.168.15.20/24` | Define o endereço IP para a conexão Wi-Fi. |
 | `--WIFI_GATEWAY` | `<IP>` | `192.168.15.1` | Define o gateway padrão para a conexão Wi-Fi. |
 | `--WIFI_DNS` | `<DNS1>,<DNS2>` | `8.8.8.8,1.1.1.1` | Define os servidores DNS para a conexão Wi-Fi. |
@@ -162,7 +162,7 @@ sudo -E bash get.sh \
 ```bash
 sudo -E bash get.sh \
   --conectar_wifi=y \
-  --WIFI_CONFIGS="teSt1:123456789:7,test2-5G:abcdef:9" \
+  --WIFI_CONFIGS=""teSt1:123456789:7","test2-5G:abcdef:9"" \
   --WIFI_IP_ADDRESS="192.168.15.20/24" \
   --drive=y \
   --RCLONE_CONFIG="client_id=abcde12345,client_secret=abcde12345"
