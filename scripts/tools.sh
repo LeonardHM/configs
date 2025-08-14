@@ -207,18 +207,16 @@ apt_update() {
     echo_orange "PID $pid"
 
     if show_progress "Atualizando repositórios..." $pid; then
-        local upgrade_count=$(apt list --upgradable 2>/dev/null | wc -l)
-        upgrade_count=$((upgrade_count - 1))
+        local count=$(apt list --upgradable 2>/dev/null | wc -l)
+        count=$((count - 1))
 
-        if [ "$upgrade_count" -gt 0 ]; then
-            echo_orange "$upgrade_count pacotes podem ser atualizados."
-            echo
+        if [ "$count" -gt 0 ]; then
+            echo_orange "$count pacotes podem ser atualizados."
         else
             echo_green "Nenhum pacote precisa ser atualizado."
-            echo
         fi
 
-        echo "$upgrade_count"  # retorna como saída da função
+        echo "$count"  # só imprime o número, nada mais
     fi
 }
 
