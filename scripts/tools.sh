@@ -211,12 +211,12 @@ apt_update() {
         count=$((count - 1))
 
         if [ "$count" -gt 0 ]; then
-            echo_orange "$count pacotes podem ser atualizados."
+            print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
         else
-            echo_green "Nenhum pacote precisa ser atualizado."
+             print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
-        echo "$count"  # só imprime o número, nada mais
+        echo "$count"
     fi
 }
 
@@ -225,7 +225,7 @@ apt_upgrade() {
     local upgrade_count="$1"
 
     if [[ "$upgrade_count" -le 0 ]]; then
-        echo_green "Nada a atualizar."
+        print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
         return 0
     fi
 
