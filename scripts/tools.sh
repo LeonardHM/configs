@@ -234,9 +234,9 @@ apt_upgrade() {
     sudo apt upgrade --assume-no | grep -E "removido|remove" || true
 
     (
-        sudo apt upgrade -y -qq > /dev/null && \
-        sudo apt full-upgrade -y -qq > /dev/null && \
-        sudo apt dist-upgrade -y -qq > /dev/null
+        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
+        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
+        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
     ) &
     local pid=$!
 
