@@ -81,7 +81,7 @@ sudo -E bash get.sh --expert config_zsh
 ### ⚙️ Variáveis de Opções
 
 | Badge | Variável | Valor | Descrição | Configuração |
-| :---: | :--- | :--- | :--- |
+| :---: | :--- | :--- | :--- | :--- |
 | ![80%](https://img.shields.io/badge/80%25-yellow) | `--conectar_wifi` | `y\|n` | Conecta à rede Wi-Fi configurada. | `--WIFI_CONFIGS --WIFI_IP_ADDRESS --WIFI_GATEWAY --WIFI_DNS` |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--compartilhar_internet_lan` | `y\|n` | Habilita o compartilhamento de internet pela porta Ethernet. | `--SHARED_IP_ADDRESS` |
 | | `--instalar_pi_hole` | `y\|n` | Instala o Pi-hole junto com o compartilhamento de internet. | `--DHCP_RANGE --PIHOLE_DNS` |
