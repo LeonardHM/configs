@@ -95,7 +95,7 @@ sudo -E bash get.sh --expert config_zsh
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--habilitar_tft` | `y\|n` | Habilita o display TFT no Raspberry Pi. |
 | | `--drive` | `y\|n` | Configura o Google Drive com Rclone. | `--RCLONE_CONFIG` |
 | ![80%](https://img.shields.io/badge/80%25-yellow)) | `--alexa_commands` | `y\|n` | Instala TriggerCMD para comandos da Alexa. | `--TRIGGERCMD_TOKEN` |
-| | `--cosmos` | `y\|n` | Instala Cosmos Cloud Server. [![GitHub](https://img.shields.io/badge/COSMOS--SERVER-100000?style=for-the-badge&logo=github&logoColor=white&label=)](https://github.com/azukaar/cosmos-server) | `--CLOUDFLARE_TOKEN` |
+| | `--cosmos` | `y\|n` | Instala Cosmos Cloud Server, Docker e Cloudflare-Tunnel. [![GitHub](https://img.shields.io/badge/COSMOS--SERVER-100000?style=for-the-badge&logo=github&logoColor=white&label=)](https://github.com/azukaar/cosmos-server) | `--CLOUDFLARE_TOKEN` |
 | | `--mine_server` | `y\|n` | Instala um servidor de Minecraft Java. |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--reiniciar` | `y\|n` | Reinicia o sistema após a finalização do script. |
 
