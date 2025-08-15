@@ -19,6 +19,8 @@ PHRASE_TO_CHECK='"reiniciar raspberry"'
 
 
 commands_alexa() {
+    local USER_TOKEN="$1"
+
     print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO INTEGRAÇÃO COM ALEXA...")"
 
     PINCTRL_PATH=$(command -v pinctrl)
@@ -38,6 +40,7 @@ commands_alexa() {
         fi
     fi
 
+    echo
     instalar_programa cec-utils npm nodejs
     echo
 
@@ -97,22 +100,34 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    # Pergunta ao usuário o token somente se não existir
+    # === Lógica para o token ===
     if [ ! -f "$TOKEN_FILE" ]; then
-        read -p "Digite o token do TriggerCMD: " USER_TOKEN
-        echo "$USER_TOKEN" | sudo tee "$TOKEN_FILE" >/dev/null
+        if [ -z "$USER_TOKEN" ]; then
+            read -p "Digite o token do TriggerCMD: " USER_TOKEN
+        else
+            print_log "$(log_info)" "$(echo_yellow "Usando token fornecido via CLI.")"
+        fi
+
+        if [ -z "$USER_TOKEN" ]; then
+            print_log "$(log_error)" "$(echo_red "Nenhum token fornecido. Abortando a configuração da Alexa.")"
+            exit 1
+        fi
+
+        sudo sh -c "echo -n '$USER_TOKEN' > '$TOKEN_FILE'"
         sudo chmod 600 "$TOKEN_FILE"
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
     else
         print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação.")"
     fi
 
+    # ativa apenas o agent
     # Inicia o agent em segundo plano silencioso, apenas se não estiver rodando
-    if command -v triggercmdagent &>/dev/null && ! pgrep -f "triggercmdagent" >/dev/null; then
-        print_log "$(log_aviso)" "$(echo_orange "Iniciando TriggerCMD Agent em segundo plano...")"
-        sudo triggercmdagent >/dev/null 2>&1 &
-    fi
+    #if command -v triggercmdagent &>/dev/null && ! pgrep -f "triggercmdagent" >/dev/null; then
+    #    print_log "$(log_aviso)" "$(echo_orange "Iniciando TriggerCMD Agent em segundo plano...")"
+    #    sudo triggercmdagent >/dev/null 2>&1 &
+    #fi
 
+    # ativa o agent e o daemon
     # Verifica se o daemon do TriggerCMD já está instalado e ativo.
     if systemctl is-active --quiet triggercmdagent; then
         print_log "$(log_info)" "$(echo_yellow "Daemon do TriggerCMD já está instalado e ativo. Pulando instalação.")"

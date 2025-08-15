@@ -44,6 +44,8 @@ RCLONE_CONFIG=(
     "client_secret=abcde12345"
 )
 
+# Token TriggerCMD
+TRIGGERCMD_TOKEN=""
 
 # Variaveis para controle MQTT Docker
 MQTT_BROKER="192.168.1.1"

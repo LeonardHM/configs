@@ -80,12 +80,12 @@ sudo -E bash get.sh --expert config_zsh
 
 ### ⚙️ Variáveis de Opções
 
-| Badge | Variável | Valor | Descrição |
+| Badge | Variável | Valor | Descrição | Configuração |
 | :---: | :--- | :--- | :--- |
-| | `--conectar_wifi` | `y\|n` | Conecta à rede Wi-Fi configurada. |
-| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--compartilhar_internet_lan` | `y\|n` | Habilita o compartilhamento de internet pela porta Ethernet. |
-| | `--instalar_pi_hole` | `y\|n` | Instala o Pi-hole junto com o compartilhamento de internet. |
-| | `--update_system` | `y\|n` | Atualiza todos os pacotes e o sistema. |
+| ![80%](https://img.shields.io/badge/80%25-yellow) | `--conectar_wifi` | `y\|n` | Conecta à rede Wi-Fi configurada. | `--WIFI_CONFIGS --WIFI_IP_ADDRESS --WIFI_GATEWAY --WIFI_DNS` |
+| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--compartilhar_internet_lan` | `y\|n` | Habilita o compartilhamento de internet pela porta Ethernet. | `--SHARED_IP_ADDRESS` |
+| | `--instalar_pi_hole` | `y\|n` | Instala o Pi-hole junto com o compartilhamento de internet. | `--DHCP_RANGE --PIHOLE_DNS` |
+| ![80%](https://img.shields.io/badge/80%25-yellow) | `--update_system` | `y\|n` | Atualiza todos os pacotes e o sistema. |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--install_basic_zsh` | `y\|n` | Instala programas básicos e o Zsh. |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--install_theme` | `y\|n` | Instala temas, ícones e wallpapers [![GitHub](https://img.shields.io/badge/CUSTOM-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LeonardHM/custom)
 . |
@@ -94,11 +94,11 @@ sudo -E bash get.sh --expert config_zsh
 | | `--ativar_ssh` | `y\|n` | Ativa e configura o acesso SSH. |
 | | `--ativar_vnc` | `y\|n` | Ativa e configura o VNC Server. |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--habilitar_tft` | `y\|n` | Habilita o display TFT no Raspberry Pi. |
-| | `--drive` | `y\|n` | Configura o Google Drive com Rclone. |
-| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--alexa_commands` | `y\|n` | Instala TriggerCMD para comandos da Alexa. |
-| | `--cosmos` | `y\|n` | Instala Cosmos Cloud Server. |
+| | `--drive` | `y\|n` | Configura o Google Drive com Rclone. | `--RCLONE_CONFIG` |
+| ![80%](https://img.shields.io/badge/80%25-yellow)) | `--alexa_commands` | `y\|n` | Instala TriggerCMD para comandos da Alexa. | `--TRIGGERCMD_TOKEN` |
+| | `--cosmos` | `y\|n` | Instala Cosmos Cloud Server. [![GitHub](https://img.shields.io/badge/COSMOS-SERVER-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/azukaar/cosmos-server) | `--CLOUDFLARE_TOKEN` |
 | | `--mine_server` | `y\|n` | Instala um servidor de Minecraft Java. |
-| | `--reiniciar` | `y\|n` | Reinicia o sistema após a finalização do script. |
+| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--reiniciar` | `y\|n` | Reinicia o sistema após a finalização do script. |
 
 > 💡 **Dica:** Os badges indicam o nível de implementação da função.
 > - ![100%](https://img.shields.io/badge/100%25-brightgreen) 100% funcional
@@ -121,6 +121,7 @@ sudo -E bash get.sh --expert config_zsh
 | `--PIHOLE_DNS` | `<IP>` | `192.168.1.1` | Define o DNS para o Pi-hole. |
 | `--CLOUDFLARE_TOKEN` | `<token>` | `abcdef1234567890` | Define o token do Cloudflare Tunnel. |
 | `--RCLONE_CONFIG` | `<client_id>,<client_secret>` | `"client_id=abcde12345,client_secret=abcde12345"` | Define as credenciais do Rclone. |
+| `--TRIGGERCMD_TOKEN` | `"<token>"` | Define o token do TriggerCMD. |
 | `--MQTT_BROKER` | `<IP>` | `192.168.1.1` | Define o endereço do broker MQTT. |
 | `--MQTT_PORT` | `<porta>` | `1883` | Define a porta do broker MQTT. |
 | `--MQTT_USER_DOCKER` | `<usuario>` | `docker_user` | Define o usuário MQTT para o Docker. |

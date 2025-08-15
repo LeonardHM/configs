@@ -74,8 +74,6 @@ vars_de_acao=(
 )
 
 
-
-
 # --- Função Principal de Execução ---
 main() {
     # Inicializa variáveis para o novo fluxo
@@ -101,11 +99,11 @@ main() {
             --SHARED_IP_ADDRESS=*) SHARED_IP_ADDRESS="${arg#*=}" ;;
             --DHCP_RANGE=*) DHCP_RANGE="${arg#*=}" ;;
             --PIHOLE_DNS=*) PIHOLE_DNS="${arg#*=}" ;;
-            --conexao_lan=*) conexao_lan="${arg#*=}" ;;
             --CLOUDFLARE_TOKEN=*) CLOUDFLARE_TOKEN="${arg#*=}" ;;
             --RCLONE_CONFIG=*)
                 IFS=',' read -ra RCLONE_CONFIG <<< "${arg#*=}"
                 ;;
+            --TRIGGERCMD_TOKEN=*) TRIGGERCMD_TOKEN="${arg#*=}" ;;
             --MQTT_BROKER=*) MQTT_BROKER="${arg#*=}" ;;
             --MQTT_PORT=*) MQTT_PORT="${arg#*=}" ;;
             --MQTT_USER_DOCKER=*) MQTT_USER_DOCKER="${arg#*=}" ;;
@@ -419,7 +417,7 @@ main() {
 
     # Configurar comandos Alexa
     if [[ $alexa_commands =~ ^[Yy]$ ]]; then
-        commands_alexa
+        commands_alexa "$TRIGGERCMD_TOKEN"
     fi
 
     # Configurar Servidor Cosmos
