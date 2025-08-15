@@ -87,8 +87,7 @@ sudo -E bash get.sh --expert config_zsh
 | | `--instalar_pi_hole` | `y\|n` | Instala o Pi-hole junto com o compartilhamento de internet. | `--DHCP_RANGE --PIHOLE_DNS` |
 | ![80%](https://img.shields.io/badge/80%25-yellow) | `--update_system` | `y\|n` | Atualiza todos os pacotes e o sistema. |
 | ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--install_basic_zsh` | `y\|n` | Instala programas básicos e o Zsh. |
-| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--install_theme` | `y\|n` | Instala temas, ícones e wallpapers [![GitHub](https://img.shields.io/badge/CUSTOM-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LeonardHM/custom)
-. |
+| ![100%](https://img.shields.io/badge/100%25-brightgreen) | `--install_theme` | `y\|n` | Instala temas, ícones e wallpapers [![GitHub](https://img.shields.io/badge/CUSTOM-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LeonardHM/custom). |
 | | `--programas` | `"prog1 prog2"` | Instala programas específicos (ex: `"Heimdall SCRCPY PI-APPS"`). |
 | | `--pi_apps_programas` | `"prog1 prog2"` | Instala programas do Pi-Apps (ex: `"Minecraft Vivaldi"`). <br> **Observação:** Esta variável só terá efeito se a variável `--programas` incluir `PI-APPS`. |
 | | `--ativar_ssh` | `y\|n` | Ativa e configura o acesso SSH. |
