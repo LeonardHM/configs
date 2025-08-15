@@ -39,6 +39,7 @@ commands_alexa() {
     fi
 
     instalar_programa cec-utils npm nodejs
+    echo
 
     # Define o diretório de configuração para root
     CONFIG_DIR="/root/.TRIGGERcmdData"
@@ -63,8 +64,6 @@ commands_alexa() {
         fi
         print_log "$(log_success)" "$(echo_green "Arquivo de comandos criado/atualizado com sucesso.")"
     fi
-
-
 
     # Instala TriggerCMD se não existir
     if ! command -v triggercmdagent &>/dev/null; then
@@ -98,19 +97,18 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    # Verifica se o token já existe em /root/.TRIGGERcmdData
+    # Pergunta ao usuário o token somente se não existir
     if [ ! -f "$TOKEN_FILE" ]; then
-        # Comportamento: solicita o token interativamente
-        print_log "$(log_info)" "$(echo_red "Token do TriggerCMD não encontrado em '$CONFIG_DIR'.")"
-        print_log "$(log_aviso)" "$(echo_orange "APOS DIGITAR O TOKEN E A INSTALÇÃO TRAVAR, CLIQUE EM CTRL+C PARA CONTINUAR.")"
-        echo
-        sudo triggercmdagent
+        read -p "Digite o token do TriggerCMD: " USER_TOKEN
+        echo "$USER_TOKEN" | sudo tee "$TOKEN_FILE" >/dev/null
+        sudo chmod 600 "$TOKEN_FILE"
+        print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
     else
-        print_log "$(log_info)" "$(echo_yellow "Token do TriggerCMD já existe em $CONFIG_DIR. Pulando a solicitação.")"
+        print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação.")"
     fi
 
-    # Inicia o agente em segundo plano silenciosamente, se ainda não estiver rodando (e o token existe)
-    if command -v triggercmdagent &>/dev/null && [ -f "$TOKEN_FILE" ] && ! pgrep -f "triggercmdagent" >/dev/null; then
+    # Inicia o agent em segundo plano silencioso, apenas se não estiver rodando
+    if command -v triggercmdagent &>/dev/null && ! pgrep -f "triggercmdagent" >/dev/null; then
         print_log "$(log_aviso)" "$(echo_orange "Iniciando TriggerCMD Agent em segundo plano...")"
         sudo triggercmdagent >/dev/null 2>&1 &
     fi
@@ -134,6 +132,7 @@ commands_alexa() {
     print_log "$(log_success)" "$(echo_green "Configuração da Alexa com TriggerCMD concluída com sucesso!")"
     echo
 }
+
 
 uninstall_triggercmd() {
     ############ DESISTALAR ##############

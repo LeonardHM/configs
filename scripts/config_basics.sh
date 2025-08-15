@@ -50,7 +50,6 @@ config_zsh() {
 
         for plugin in "zsh-autosuggestions" "zsh-syntax-highlighting"; do
             if [ ! -d "$PLUGIN_ZSH_DIR/$plugin" ]; then
-                print_log "$(log_info)" "$(echo_orange "Instalando o plugin '$plugin'...")"
                 # Clona o repositório como o usuário original
                 if ! git clone -q "https://github.com/zsh-users/$plugin" "$PLUGIN_ZSH_DIR/$plugin"; then
                     print_log "$(log_error)" "$(echo_red "Erro ao instalar o plugin '$plugin'.")"
@@ -208,7 +207,7 @@ func_pc() {
 
 # Função para pc e raspberry
 func_pc_rasp() {
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS DE CUSTOMIZAÇÃO.")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS DE CUSTOMIZAÇÃO")"
     instalar_programa "${zsh_install[@]}"
     echo
     config_zsh
@@ -217,7 +216,7 @@ func_pc_rasp() {
 # Função para configurar temas, ícones e wallpapers.
 config_theme() {
     print_log "$(log_aviso)" "$(echo_orange "Clonando / Atualizando repositórios de temas, ícones e wallpapers...")"
-    echo_orange "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom."
+    echo_orange "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom"
     # Cria um subshell para executar as operações em segundo plano.
     # O `&` no final envia o subshell para o background, e seu PID é armazenado.
     (
@@ -256,13 +255,13 @@ config_theme() {
         # Clona ou atualiza o repositório LeonardHM/custom
         if [ ! -d "$CLONE_DIR/custom" ]; then
             git clone --quiet "https://github.com/LeonardHM/custom" "$CLONE_DIR/custom" >/dev/null 2>&1 || {
-                print_log "$(log_error)" "$(echo_red "Falha ao clonar LeonardHM/custom.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao clonar LeonardHM/custom")"
                 exit 1
             }
         else
             git config --global --add safe.directory "$CLONE_DIR/custom"
             sudo git -C "$CLONE_DIR/custom" pull --quiet >/dev/null 2>&1 || {
-                print_log "$(log_error)" "$(echo_red "Falha ao atualizar LeonardHM/custom.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao atualizar LeonardHM/custom")"
                 exit 1
             }
         fi
@@ -307,6 +306,7 @@ config_theme() {
 
     # Se o processo em segundo plano for concluído com sucesso, exibe a mensagem final.
     print_log "$(log_success)" "$(echo_green "Temas, ícones e wallpapers copiados com sucesso.")"
+    echo
     return 0
 }
 
