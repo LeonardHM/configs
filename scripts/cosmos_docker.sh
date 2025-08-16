@@ -19,9 +19,6 @@ install_docker() {
 EOF
 
         instalar_programa "${server_install[@]}"
-    else
-        print_log "$(log_success)" "$(echo_green "Docker já está instalado.")"
-        echo
     fi
 
 
@@ -100,8 +97,6 @@ cloudflare_tunnel() {
     fi
 
     # Instalação do Cloudflare Tunnel
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL...")"
-
     exec 3>&1
     {
         sudo docker run -d \
