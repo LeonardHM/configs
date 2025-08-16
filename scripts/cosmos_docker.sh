@@ -59,6 +59,7 @@ cloudflare_tunnel() {
     install_docker
 
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
+    echo
 
     # Define a variável local com o valor da variável global.
     local token_final="$CLOUDFLARE_TOKEN"
@@ -189,17 +190,21 @@ EOF
         sudo chmod +x /opt/cosmos/cosmos || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao definir permissões do binário.")" && exit 1; }
         sudo rm -f "${ZIP_FILE}" "${ZIP_FILE}.md5"
 
-        # Instalar e iniciar o serviço do Systemd
-        if systemctl list-unit-files | grep -q "^CosmosCloud.service"; then
-            print_status "Serviço CosmosCloud já existe. Pulando instalação..."
+        # Instalar e iniciar o serviço do Systemd, e habilitar o serviço no boot.
+        if systemctl is-enabled CosmosCloud.service >/dev/null 2>&1; then
         else
-            # aparentemente exibe como erro mesmo tendo funcionado
-            sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
+            sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Falha ao instalar o serviço Systemd do Cosmos.")"
+                exit 1
+            }
         fi
 
-        sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao recarregar o Systemd.")" && exit 1; }
-        sudo systemctl enable --now CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
+        # Reinicia o daemon do systemd para que ele reconheça o novo serviço.
+        sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao recarregar o Systemd.")" && exit 1; }
 
+        # Inicia e habilita o serviço em uma única etapa
+        # O '--now' faz com que ele inicie imediatamente.
+        sudo systemctl enable --now CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
 
     } & # Executar tudo em um único processo em segundo plano
 
