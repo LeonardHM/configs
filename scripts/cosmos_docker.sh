@@ -1,6 +1,5 @@
 install_docker() {
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO DOCKER...")"
-    echo
 
     # 1. Verificar se a arquitetura e a distro são suportadas
     if [[ "$SISTEMA_TIPO" == "termux" || "$SISTEMA_TIPO" == "desconhecido" ]]; then
