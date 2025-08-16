@@ -80,8 +80,8 @@ cloudflare_tunnel() {
         return 1
     fi
 
-    # Verifica se o contêiner do Cloudflare Tunnel já existe
-    if sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
+    # Verifica se já existe contêiner cloudflared
+    if sudo docker ps -a --filter "name=cloudflared-tunnel" --format "{{.ID}}" | grep -q .; then
         # Se o contêiner existe, pergunta ao usuário
         print_log "$(log_info)" "$(echo_yellow "Cloudflare Tunnel já está instalado.")"
         ask_questions new_cloudflare "Deseja reinstalar o Cloudflare Tunnel com um novo token?"
@@ -91,22 +91,21 @@ cloudflare_tunnel() {
             sudo docker rm -f cloudflared-tunnel >/dev/null 2>&1
             # O script prossegue para a instalação abaixo.
         else
-            # O usuário não quer reinstalar. Verifique se o contêiner está parado e o reinicie.
-            if ! sudo docker ps --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
-                print_log "$(log_aviso)" "$(echo_orange "Cloudflare Tunnel instalado, mas não está rodando. Reiniciando...")"
-                sudo docker start $(sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | head -n 1) >/dev/null 2>&1
-                print_log "$(log_info)" "$(echo_yellow "Cloudflare Tunnel reiniciado com sucesso.")"
+            # O usuário não quer reinstalar. Verifique se o contêiner está parado e o reinicia
+            if ! sudo docker ps --filter "name=cloudflared-tunnel" --format "{{.ID}}" | grep -q .; then
+                print_log "$(log_aviso)" "$(echo_orange "Cloudflare Tunnel instalado, mas parado. Reiniciando...")"
+                sudo docker start cloudflared-tunnel >/dev/null 2>&1
+                print_log "$(log_success)" "$(echo_green "Cloudflare Tunnel reiniciado com sucesso.")"
             else
-                print_log "$(log_success)" "$(echo_green "Cloudflare Tunnel já está instalado e rodando.")"
+                print_log "$(log_success)" "$(echo_green "Cloudflare Tunnel já está rodando.")"
             fi
             return 0
         fi
     fi
 
-    # Agora, o script prossegue com a instalação normal, sabendo que o contêiner antigo foi removido.
+    # Instalação do Cloudflare Tunnel
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL...")"
 
-    # Se não encontrou nenhuma instância, instala uma nova
     exec 3>&1
     {
         sudo docker run -d \
@@ -125,6 +124,8 @@ cloudflare_tunnel() {
         return 1
     fi
 }
+
+
 
 
 install_cosmos() {
