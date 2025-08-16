@@ -15,7 +15,7 @@ EOM
 # Atenção: Ajuste a 'PHRASE_TO_CHECK' se você mudar significativamente os comandos.
 # Escolha uma frase única que seja improvável de mudar e que represente a versão "correta" dos seus comandos.
 # IMPORTANTE: Use aspas simples para proteger a string para o bash -c, e aspas duplas internas para o grep encontrar a string exata no JSON.
-PHRASE_TO_CHECK='"reiniciar raspberry"' 
+PHRASE_TO_CHECK='"reiniciar raspberry"'
 
 
 commands_alexa() {
@@ -100,25 +100,26 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    # === Lógica para o token ===
-    if [ ! -f "$TOKEN_FILE" ]; then
-        if [ -z "$USER_TOKEN" ]; then
-            read -p "Digite o token do TriggerCMD: " USER_TOKEN
-        else
-            print_log "$(log_info)" "$(echo_yellow "Usando token fornecido via CLI.")"
-        fi
 
-        if [ -z "$USER_TOKEN" ]; then
-            print_log "$(log_error)" "$(echo_red "Nenhum token fornecido. Abortando a configuração da Alexa.")"
-            exit 1
-        fi
-
+    # === Lógica para o token (ATUALIZADA) ===
+    # Prioriza o token passado como argumento/variável.
+    if [ -n "$USER_TOKEN" ]; then
+        print_log "$(log_info)" "$(echo_yellow "Token fornecido via argumento/variável. Salvando/Atualizando...")"
         sudo sh -c "echo -n '$USER_TOKEN' > '$TOKEN_FILE'"
         sudo chmod 600 "$TOKEN_FILE"
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
+    elif [ -f "$TOKEN_FILE" ]; then
+        # Se nenhum token foi passado como argumento, mas o arquivo existe, usa o existente.
+        print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação interativa.")"
     else
-        print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação.")"
+        # Se nenhum token foi passado e o arquivo não existe, solicita interativamente.
+        print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
+        read -p "Digite o token do TriggerCMD: " INTERACTIVE_TOKEN
+        sudo sh -c "echo -n '$INTERACTIVE_TOKEN' > '$TOKEN_FILE'"
+        sudo chmod 600 "$TOKEN_FILE"
+        print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
     fi
+
 
     # ativa apenas o agent
     # Inicia o agent em segundo plano silencioso, apenas se não estiver rodando

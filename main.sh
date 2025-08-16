@@ -82,7 +82,7 @@ main() {
     local FAST_MODE=false
 
     # ===============================================
-    # PROCESSAMENTO DE ARGUMENTOS DA LINHA DE COMANDO (UNIFICADO)
+    # PROCESSAMENTO DE ARGUMENTOS DA LINHA DE COMANDO
     # ===============================================
     for arg in "$@"; do
         case "$arg" in
