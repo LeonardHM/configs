@@ -68,6 +68,18 @@ cloudflare_tunnel() {
     # Define a variável local com o valor da variável global.
     local token_final="$CLOUDFLARE_TOKEN"
 
+    # Se a variável local estiver vazia, solicita o token ao usuário.
+    if [[ -z "$token_final" ]]; then
+        echo_orange "Nenhum token foi fornecido como argumento ou definido no arquivo de variáveis."
+        read -rp "Digite o token do Cloudflare Tunnel: " token_final
+    fi
+
+    # Checa se o usuário forneceu um token após a solicitação.
+    if [[ -z "$token_final" ]]; then
+        print_log "$(log_error)" "$(echo_red "Token do Cloudflare Tunnel não informado. Abortando...")"
+        return 1
+    fi
+
     # Verifica se o contêiner do Cloudflare Tunnel já existe
     if sudo docker ps -a --filter "ancestor=cloudflare/cloudflared:latest" --format "{{.ID}}" | grep -q .; then
         # Se o contêiner existe, pergunta ao usuário
@@ -90,18 +102,6 @@ cloudflare_tunnel() {
             return 0
         fi
     fi
-
-    # Se a variável local estiver vazia, solicita o token ao usuário.
-    if [[ -z "$token_final" ]]; then
-        echo_orange "Nenhum token foi fornecido como argumento ou definido no arquivo de variáveis."
-        read -rp "Digite o token do Cloudflare Tunnel: " token_final
-    fi
-
-    # Checa se o usuário forneceu um token após a solicitação.
-    if [[ -z "$token_final" ]]; then
-        print_log "$(log_error)" "$(echo_red "Token do Cloudflare Tunnel não informado. Abortando...")"
-        return 1
-    fi
 
     # Agora, o script prossegue com a instalação normal, sabendo que o contêiner antigo foi removido.
     print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL...")"
