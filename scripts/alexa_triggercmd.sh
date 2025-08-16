@@ -47,7 +47,8 @@ commands_alexa() {
     # Define o diretório de configuração para root
     CONFIG_DIR="/root/.TRIGGERcmdData"
     TOKEN_FILE="$CONFIG_DIR/token.tkn"
-    COMMANDS_FILE="$CONFIG_DIR/commands.json" # Caminho para o arquivo de comandos
+    COMMANDS_FILE="$CONFIG_DIR/commands.json"
+    COMPUTERID_FILE="$CONFIG_DIR/computerid.cfg"
 
     # Garante que o diretório de configuração exista e tenha as permissões corretas
     sudo mkdir -p "$CONFIG_DIR"
@@ -70,7 +71,6 @@ commands_alexa() {
 
     # Instala TriggerCMD se não existir
     if ! command -v triggercmdagent &>/dev/null; then
-
         (
             wget -q https://s3.amazonaws.com/triggercmdagents/triggercmdagent_1.0.1_all.deb -O /tmp/triggercmdagent.deb
             if [ $? -ne 0 ]; then
@@ -96,37 +96,53 @@ commands_alexa() {
             exit 1
         fi
     else
-
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
+    echo "✨ Iniciando configuração do TriggerCMD... ✨"
+    echo "🧹 Removendo arquivos de configuração antigos (se existirem)..."
+    sudo rm -f "$TOKEN_FILE" "$COMPUTERID_FILE" &>/dev/null
 
-    # === Lógica para o token (ATUALIZADA) ===
+    tmpfile=$(mktemp)
+
+
+    # === Lógica para o token ===
     # Prioriza o token passado como argumento/variável.
     if [ -n "$USER_TOKEN" ]; then
         print_log "$(log_info)" "$(echo_yellow "Token fornecido via argumento/variável. Salvando/Atualizando...")"
-        sudo sh -c "echo -n '$USER_TOKEN' > '$TOKEN_FILE'"
-        sudo chmod 600 "$TOKEN_FILE"
+        echo -n "$USER_TOKEN" > "$tmpfile"
+        chmod 600 "$tmpfile"
+        sudo triggercmdagent < "$tmpfile" &>/dev/null &
+        rm -f "$tmpfile"
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
     elif [ -f "$TOKEN_FILE" ]; then
         # Se nenhum token foi passado como argumento, mas o arquivo existe, usa o existente.
         print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação interativa.")"
+        sudo triggercmdagent < "$TOKEN_FILE" &>/dev/null &
     else
         # Se nenhum token foi passado e o arquivo não existe, solicita interativamente.
         print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
         read -p "Digite o token do TriggerCMD: " INTERACTIVE_TOKEN
-        sudo sh -c "echo -n '$INTERACTIVE_TOKEN' > '$TOKEN_FILE'"
-        sudo chmod 600 "$TOKEN_FILE"
+
+        echo -n "$INTERACTIVE_TOKEN" > "$tmpfile"
+        chmod 600 "$tmpfile"
+        sudo triggercmdagent < "$tmpfile" &>/dev/null &
+        rm -f "$tmpfile"
+
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
     fi
 
 
-    # ativa apenas o agent
-    # Inicia o agent em segundo plano silencioso, apenas se não estiver rodando
-    #if command -v triggercmdagent &>/dev/null && ! pgrep -f "triggercmdagent" >/dev/null; then
-    #    print_log "$(log_aviso)" "$(echo_orange "Iniciando TriggerCMD Agent em segundo plano...")"
-    #    sudo triggercmdagent >/dev/null 2>&1 &
-    #fi
+    # Verifica se ambos os arquivos token.tkn e computerid.cfg foram criados com sucesso
+    if [[ -f "$COMPUTERID_FILE" && -f "$TOKEN_FILE" ]]; then
+        echo "✅ TriggerCMD Agent conectado ao servidor. Iniciando/reiniciando o serviço systemd para rodar o agente em background. 🎉"
+        sudo systemctl restart triggercmdagent.service
+    else
+        echo "❌ Falha ao registrar o computador ou gerar $COMPUTERID_FILE."
+        echo "   Para depuração, tente rodar 'sudo triggercmdagent' interativamente para ver o erro detalhado."
+        kill $AGENT_PID &>/dev/null
+        exit 1
+    fi
 
     # ativa o agent e o daemon
     # Verifica se o daemon do TriggerCMD já está instalado e ativo.

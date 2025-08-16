@@ -36,7 +36,7 @@ PIHOLE_DNS="192.168.1.1"
 conexao_lan=$(nmcli connection show | grep -E "Conexão cabeada 1|Wired connection 1" | awk '{print $1,$2,$3}')
 
 # Token Cloudflared Tunnel
-CLOUDFLARE_TOKEN="abcde12345"
+CLOUDFLARE_TOKEN=""
 
 # Tokens e chaves do rclone (array de strings)
 RCLONE_CONFIG=(
