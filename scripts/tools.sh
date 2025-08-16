@@ -198,6 +198,9 @@ show_progress() {
 }
 
 
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
+# ==============================================================================
 apt_update() {
     echo_yellow "ATUALIZANDO REPOSITORIOS"
 
@@ -221,6 +224,9 @@ apt_update() {
 }
 
 
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
+# ==============================================================================
 apt_upgrade() {
     local upgrade_count="$1"
 
@@ -248,11 +254,17 @@ apt_upgrade() {
 }
 
 
+# ==============================================================================
+# FUNÇÃO PARA VERIFICAÇÃO DE PROGRAMAS INSTALADOS
+# ==============================================================================
 is_installed() {
     dpkg -l | grep -q "^ii  $1" 2>/dev/null
 }
 
 
+# ==============================================================================
+# FUNÇÃO PARA INSTALAÇÃO DE PROGRAMAS
+# ==============================================================================
 instalar_programa() {
     for programa in "$@"; do
         programa_maiusculo=$(echo "$programa" | tr '[:lower:]' '[:upper:]')
@@ -280,7 +292,7 @@ instalar_programa() {
 
 
 # ==============================================================================
-# FUNÇÃO DE DETECÇÃO AUTOMÁTICA DO SISTEMA
+# FUNÇÃO PARA DETECÇÃO AUTOMÁTICA DO SISTEMA
 # ==============================================================================
 detectar_sistema() {
     echo_red "DETECTANDO SISTEMA E ARQUITETURA..."
@@ -331,5 +343,47 @@ detectar_sistema() {
     fi
 
     return 0
+}
+
+
+# ==============================================================================
+# FUNÇÃO PARA PERGUNTAS
+# ==============================================================================
+ask_questions() {
+    local var_name="$1"
+    local mensagem="$2"
+    local tentativas=3
+    local resposta=""
+
+    local valor_atual
+    valor_atual=$(eval "echo \$$var_name")
+    if [[ -n "$valor_atual" && "$valor_atual" =~ ^[YyNn]$ ]]; then
+        print_log "$(log_info)" "$(echo_yellow "RESPOSTA PARA '$var_name' JÁ DEFINIDA: '$valor_atual'. PULANDO PERGUNTA.")"
+        echo
+        return
+    fi
+
+    for ((i=tentativas; i>0; i--)); do
+        echo_orange "$mensagem (Y/N):"
+        read -r resposta
+        resposta=$(echo "$resposta" | tr '[:lower:]' '[:upper:]')
+
+        if [[ -z "$resposta" ]]; then
+            resposta="N"
+        fi
+
+        if [[ "$resposta" =~ ^[YN]$ ]]; then
+            eval "$var_name='$resposta'"
+            return
+        else
+            echo_red "Resposta inválida. Por favor, digite Y ou N."
+            echo_red "Tentativas restantes: $((i-1))"
+            echo
+        fi
+    done
+
+    echo_red "Número máximo de tentativas excedido. Considerando resposta N."
+    eval "$var_name='N'"
+    echo
 }
 
