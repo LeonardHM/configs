@@ -99,8 +99,6 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    echo "✨ Iniciando configuração do TriggerCMD... ✨"
-    echo "🧹 Removendo arquivos de configuração antigos (se existirem)..."
     sudo rm -f "$TOKEN_FILE" "$COMPUTERID_FILE" &>/dev/null
 
     tmpfile=$(mktemp)
@@ -115,6 +113,7 @@ commands_alexa() {
         sudo triggercmdagent < "$tmpfile" &>/dev/null &
         rm -f "$tmpfile"
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
+        echo
     elif [ -f "$TOKEN_FILE" ]; then
         # Se nenhum token foi passado como argumento, mas o arquivo existe, usa o existente.
         print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação interativa.")"
@@ -130,27 +129,17 @@ commands_alexa() {
         rm -f "$tmpfile"
 
         print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
-    fi
-
-
-    # Verifica se ambos os arquivos token.tkn e computerid.cfg foram criados com sucesso
-    if [[ -f "$COMPUTERID_FILE" && -f "$TOKEN_FILE" ]]; then
-        echo "✅ TriggerCMD Agent conectado ao servidor. Iniciando/reiniciando o serviço systemd para rodar o agente em background. 🎉"
-        sudo systemctl restart triggercmdagent.service
-    else
-        echo "❌ Falha ao registrar o computador ou gerar $COMPUTERID_FILE."
-        echo "   Para depuração, tente rodar 'sudo triggercmdagent' interativamente para ver o erro detalhado."
-        kill $AGENT_PID &>/dev/null
-        exit 1
+        echo
     fi
 
     # ativa o agent e o daemon
-    # Verifica se o daemon do TriggerCMD já está instalado e ativo.
-    if systemctl is-active --quiet triggercmdagent; then
-        print_log "$(log_info)" "$(echo_yellow "Daemon do TriggerCMD já está instalado e ativo. Pulando instalação.")"
+    # Verifica se o daemon do TriggerCMD já está instalado, ativo e habilitado.
+    if systemctl is-active --quiet triggercmdagent && systemctl is-enabled --quiet triggercmdagent; then
+        print_log "$(log_info)" "$(echo_yellow "Daemon do TriggerCMD já está instalado, ativo e habilitado. Pulando instalação.")"
+        sudo systemctl restart triggercmdagent.service
     else
-        # Se não estiver instalado, inicia o processo de instalação em segundo plano
-        print_log "$(log_info)" "$(echo_orange "Instalando daemon do TriggerCMD...")"
+        # Se não estiver instalado, ativo ou habilitado, inicia o processo de instalação em segundo plano
+        print_log "$(log_info)" "$(echo_orange "Daemon do TriggerCMD inativo ou ausente. Ativando e verificando instalação...")"
 
         (sudo sh /usr/share/triggercmdagent/app/src/installdaemon.sh >/tmp/triggercmd_daemon.log 2>&1) &
         PID_DAEMON=$!
