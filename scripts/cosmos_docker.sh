@@ -60,38 +60,34 @@ EOF
 
 
 cloudflare_tunnel() {
+    install_docker
 
-    install_docker
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
 
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL")"
+    # Define a variável local com o valor da variável global.
+    local token_final="$CLOUDFLARE_TOKEN"
 
-    # Define a variável local com o valor da variável global.
-    local token_final="$CLOUDFLARE_TOKEN"
+    # Se a variável local estiver vazia, solicita o token ao usuário.
+    if [ -z "$token_final" ]; then
+        echo_orange "Nenhum token foi fornecido como argumento ou definido no arquivo de variáveis."
+        read -rp "Digite o token do Cloudflare Tunnel: " token_final
+    fi
 
-    # Se a variável local estiver vazia, solicita o token ao usuário.
-    if [[ -z "$token_final" ]]; then
-        echo_orange "Nenhum token foi fornecido como argumento ou definido no arquivo de variáveis."
-        read -rp "Digite o token do Cloudflare Tunnel: " token_final
-    fi
-
-    # Checa se o usuário forneceu um token após a solicitação.
-    if [[ -z "$token_final" ]]; then
-        print_log "$(log_error)" "$(echo_red "Token do Cloudflare Tunnel não informado. Abortando...")"
-        return 1
-    fi
+    # Checa se o usuário forneceu um token após a solicitação.
+    if [ -z "$token_final" ]; then
+        print_log "$(log_error)" "$(echo_red "Token do Cloudflare Tunnel não informado. Abortando...")"
+        return 1
+    fi
 
     # Verifica se já existe contêiner cloudflared
     if sudo docker ps -a --filter "name=cloudflared-tunnel" --format "{{.ID}}" | grep -q .; then
-        # Se o contêiner existe, pergunta ao usuário
         print_log "$(log_info)" "$(echo_yellow "Cloudflare Tunnel já está instalado.")"
         ask_questions new_cloudflare "Deseja reinstalar o Cloudflare Tunnel com um novo token?"
 
-        if [[ "$new_cloudflare" =~ ^[Yy]$ ]]; then
+        if [ "$new_cloudflare" = "Y" ] || [ "$new_cloudflare" = "y" ]; then
             print_log "$(log_aviso)" "$(echo_orange "Removendo contêiner antigo para reinstalação...")"
             sudo docker rm -f cloudflared-tunnel >/dev/null 2>&1
-            # O script prossegue para a instalação abaixo.
         else
-            # O usuário não quer reinstalar. Verifique se o contêiner está parado e o reinicia
             if ! sudo docker ps --filter "name=cloudflared-tunnel" --format "{{.ID}}" | grep -q .; then
                 print_log "$(log_aviso)" "$(echo_orange "Cloudflare Tunnel instalado, mas parado. Reiniciando...")"
                 sudo docker start cloudflared-tunnel >/dev/null 2>&1
@@ -104,25 +100,25 @@ cloudflare_tunnel() {
     fi
 
     # Instalação do Cloudflare Tunnel
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL...")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO CLOUDFLARE TUNNEL...")"
 
-    exec 3>&1
-    {
-        sudo docker run -d \
-            --name cloudflared-tunnel \
-            --restart always \
-            cloudflare/cloudflared:latest \
-            tunnel --no-autoupdate run --token "$token_final" \
-            >/dev/null 2>&1
-    } 2>&1 &
-    local pid=$!
+    exec 3>&1
+    {
+        sudo docker run -d \
+            --name cloudflared-tunnel \
+            --restart always \
+            cloudflare/cloudflared:latest \
+            tunnel --no-autoupdate run --token "$token_final" \
+            >/dev/null 2>&1
+    } 2>&1 &
+    local pid=$!
 
-    if show_progress "CONFIGURANDO CLOUDFLARE TUNNEL..." $pid; then
-        print_log "$(log_success)" "$(echo_green "CLOUDFLARE TUNNEL INSTALADO COM SUCESSO!")"
-    else
-        print_log "$(log_error)" "$(echo_red "ERRO AO INSTALAR CLOUDFLARE TUNNEL")"
-        return 1
-    fi
+    if show_progress "CONFIGURANDO CLOUDFLARE TUNNEL..." $pid; then
+        print_log "$(log_success)" "$(echo_green "CLOUDFLARE TUNNEL INSTALADO COM SUCESSO!")"
+    else
+        print_log "$(log_error)" "$(echo_red "ERRO AO INSTALAR CLOUDFLARE TUNNEL")"
+        return 1
+    fi
 }
 
 
