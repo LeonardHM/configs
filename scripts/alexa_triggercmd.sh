@@ -99,15 +99,13 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    sudo rm -f "$TOKEN_FILE" "$COMPUTERID_FILE" &>/dev/null
-
     tmpfile=$(mktemp)
-
 
     # === Lógica para o token ===
     # Prioriza o token passado como argumento/variável.
     if [ -n "$USER_TOKEN" ]; then
         print_log "$(log_info)" "$(echo_yellow "Token fornecido via argumento/variável. Salvando/Atualizando...")"
+        sudo rm -f "$TOKEN_FILE" "$COMPUTERID_FILE" &>/dev/null
         echo -n "$USER_TOKEN" > "$tmpfile"
         chmod 600 "$tmpfile"
         sudo triggercmdagent < "$tmpfile" &>/dev/null &
@@ -117,12 +115,13 @@ commands_alexa() {
     elif [ -f "$TOKEN_FILE" ]; then
         # Se nenhum token foi passado como argumento, mas o arquivo existe, usa o existente.
         print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação interativa.")"
+        sudo rm -f "$COMPUTERID_FILE" &>/dev/null
         sudo triggercmdagent < "$TOKEN_FILE" &>/dev/null &
     else
         # Se nenhum token foi passado e o arquivo não existe, solicita interativamente.
         print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
         read -p "Digite o token do TriggerCMD: " INTERACTIVE_TOKEN
-
+        sudo rm -f "$COMPUTERID_FILE" &>/dev/null
         echo -n "$INTERACTIVE_TOKEN" > "$tmpfile"
         chmod 600 "$tmpfile"
         sudo triggercmdagent < "$tmpfile" &>/dev/null &
