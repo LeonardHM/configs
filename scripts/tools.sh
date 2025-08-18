@@ -204,7 +204,7 @@ show_progress() {
 apt_update() {
     exec 3>&1
     { sudo apt-get update -qq; } 2>&1 &
-
+    local pid=$!
 
     if show_progress "Atualizando repositórios..." $pid; then
         local count=$(apt list --upgradable 2>/dev/null | wc -l)
@@ -216,8 +216,7 @@ apt_update() {
              print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
-        # quero remover esse echo sem danufucar apt_upgrade
-        echo "$count"
+        printf "%s\n" "$count"
     fi
 }
 
@@ -228,16 +227,20 @@ apt_update() {
 apt_upgrade() {
     local upgrade_count="$1"
 
-    if [[ "$upgrade_count" -le 0 ]]; then
-        print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
-        return 0
-    fi
-
-    sudo apt upgrade --assume-no | grep -E "removido|remove" || true
-
+    # executa tudo em subshell e captura o PID
     (
-        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
+        # Verifica se há atualizações a serem feitas
+        if [[ "$upgrade_count" -le 0 ]]; then
+            print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
+            return 0
+        fi
+
+        # Mostra pacotes que serão atualizados, removidos e instalados
+        sudo apt upgrade --assume-no | grep -E "removido|remove" || true
+
+        # Executa as atualizações
+        sudo apt upgrade -y -qq >/dev/null 2>&1
+        sudo apt full-upgrade -y -qq >/dev/null 2>&1
         sudo apt dist-upgrade -y -qq >/dev/null 2>&1
     ) &
     local pid=$!
