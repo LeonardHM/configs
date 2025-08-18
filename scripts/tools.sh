@@ -205,21 +205,33 @@ show_progress() {
 # FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
 # ==============================================================================
 apt_update() {
+    # Inicia a atualização em segundo plano
     exec 3>&1
     { sudo apt-get update -qq; } 2>&1 &
     local pid=$!
 
-    if show_progress "Atualizando repositórios..." $pid; then
-        local count=$(apt list --upgradable 2>/dev/null | wc -l)
+    # Mostra o spinner enquanto a atualização roda
+    if show_progress "Atualizando repositórios..." "$pid"; then
+        # Conta pacotes atualizáveis
+        local count
+        count=$(apt list --upgradable 2>/dev/null | wc -l)
         count=$((count - 1))
 
-        if [ "$count" -gt 0 ]; then
+        if [[ "$count" -gt 0 ]]; then
             print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
         else
-             print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
+            print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
-        echo "$count" >&3
+        # Retorna o valor apenas se a função for chamada em contexto de captura
+        if [[ -t 1 ]]; then
+            : # nada a fazer, evita imprimir no terminal
+        else
+            echo "$count"
+        fi
+    else
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+        return 1
     fi
 }
 
@@ -229,7 +241,6 @@ apt_update() {
 # ==============================================================================
 apt_upgrade() {
     local upgrade_count="$1"
-    echo "leo"
 
     # executa tudo em subshell e captura o PID
     (
