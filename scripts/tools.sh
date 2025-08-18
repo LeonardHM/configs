@@ -166,7 +166,6 @@ handle_error() {
 trap 'handle_error ${LINENO}' ERR
 
 
-
 # ==============================================================================
 # FUNÇÃO GLOBAL DE PROGRESSO
 # ==============================================================================
@@ -235,7 +234,6 @@ apt_upgrade() {
     (
         # Verifica se há atualizações a serem feitas
         if [[ "$upgrade_count" -le 0 ]]; then
-
             return 0
         fi
 
@@ -254,22 +252,9 @@ apt_upgrade() {
         return 1
     fi
 
-    print_log "$(log_success)" "$(echo_green "Sistema atualizado com sucesso.")"
+    print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
     return 0
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ==============================================================================
