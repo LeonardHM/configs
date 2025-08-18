@@ -204,7 +204,7 @@ show_progress() {
 apt_update() {
     exec 3>&1
     { sudo apt-get update -qq; } 2>&1 &
-    local pid=$!
+
 
     if show_progress "Atualizando repositórios..." $pid; then
         local count=$(apt list --upgradable 2>/dev/null | wc -l)
