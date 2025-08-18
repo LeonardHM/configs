@@ -40,9 +40,7 @@ commands_alexa() {
         fi
     fi
 
-    echo
     instalar_programa cec-utils npm nodejs
-    echo
 
     # Define o diretório de configuração para root
     CONFIG_DIR="/root/.TRIGGERcmdData"
@@ -101,6 +99,8 @@ commands_alexa() {
 
     tmpfile=$(mktemp)
 
+
+    # adicionar atualizacao do token
     # === Lógica para o token ===
     # Prioriza o token passado como argumento/variável.
     if [ -n "$USER_TOKEN" ]; then

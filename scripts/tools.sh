@@ -202,8 +202,6 @@ show_progress() {
 # FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
 # ==============================================================================
 apt_update() {
-    echo_yellow "ATUALIZANDO REPOSITORIOS"
-
     exec 3>&1
     { sudo apt-get update -qq; } 2>&1 &
     local pid=$!
@@ -217,8 +215,6 @@ apt_update() {
         else
              print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
-
-        echo "$count"
     fi
 }
 

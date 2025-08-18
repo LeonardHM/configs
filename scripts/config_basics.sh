@@ -40,6 +40,7 @@ config_zsh() {
     cp -f $CLONE_DIR/configs/.zshrc "$HOME/" || { print_log "$(log_error)" "$(echo_red "Falha ao copiar .zshrc")"; exit 1; }
 
 
+    # fazer verificação para nao ter reinstalação desnecessaria
     # Configurar plugins silenciosamente
     exec 3>&1
     {
@@ -68,7 +69,6 @@ config_zsh() {
     } 2>&1 &
     local pid=$!
 
-    #  passar show_progress antes da atualização dos plugins
     if show_progress "Configurando plugins..." "$pid"; then
         print_log "$(log_success)" "$(echo_green "ZSH configurado com sucesso!")"
         echo
@@ -79,6 +79,7 @@ config_zsh() {
     fi
 }
 
+# fazer verificação do bashrc
 # Função para copiar arquivo bash
 func_geral() {
     if [ -f "$HOME/.bashrc" ]; then
@@ -207,7 +208,6 @@ func_pc() {
 
 # Função para pc e raspberry
 func_pc_rasp() {
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS DE CUSTOMIZAÇÃO")"
     instalar_programa "${zsh_install[@]}"
     echo
     config_zsh
