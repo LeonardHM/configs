@@ -172,7 +172,7 @@ trap 'handle_error ${LINENO}' ERR
 # ==============================================================================
 
 
-show_progress2() {
+show_progress() {
     local msg="$1"
     local pid="$2"
     local delay=0.1
@@ -206,7 +206,7 @@ show_progress2() {
 
 
 
-show_progress() {
+show_progress2() {
     local message="$1"
     local pid="$2"
 
