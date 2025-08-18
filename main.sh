@@ -7,7 +7,7 @@ CURRENT_DATE="16/08/2025"
 CREATOR="LeonardHM"
 
 
-configurar para quando passar wifi ou cloudflare, se não for encontrado as variaveis de configuração referente, que diga ao usuario que não encontrou e pergunta se quer passar manualmente
+# configurar para quando passar wifi ou cloudflare, se não for encontrado as variaveis de configuração referente, que diga ao usuario que não encontrou e pergunta se quer passar manualmente
 
 # =============================================================================
 

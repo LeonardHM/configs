@@ -215,6 +215,8 @@ apt_update() {
         else
              print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
+
+        echo "$count"
     fi
 }
 
