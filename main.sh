@@ -247,17 +247,17 @@ main() {
                 echo
                 instalar_programa "${basic_install[@]}"
                 echo
-                func_geral
                 func_pc
                 func_pc_rasp
+                func_geral
                 ;;
             *[Rr][Aa][Ss][Pp][Bb][Ee][Rr][Rr][Yy]*)
                 apt_update
                 echo
                 instalar_programa "${basic_install[@]}"
                 echo
-                func_geral
                 func_pc_rasp
+                func_geral
                 ;;
             *[Tt][Ee][Rr][Mm][Uu][Xx]*)
                 pkg update -qq
