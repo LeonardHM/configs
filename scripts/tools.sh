@@ -275,6 +275,7 @@ apt_upgrade() {
     local upgrade_count="$1"
 
     if [[ "$upgrade_count" -le 0 ]]; then
+        print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
         return 0
     fi
 
