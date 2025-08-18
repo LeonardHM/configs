@@ -239,7 +239,7 @@ apt_update() {
 # ==============================================================================
 # FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
 # ==============================================================================
-apt_upgrade2() {
+apt_upgrade() {
     local upgrade_count="$1"
 
     # executa tudo em subshell e captura o PID
@@ -271,7 +271,7 @@ apt_upgrade2() {
 
 
 
-apt_upgrade() {
+apt_upgrade2() {
     local upgrade_count="$1"
 
     if [[ "$upgrade_count" -le 0 ]]; then
