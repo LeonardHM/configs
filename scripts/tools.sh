@@ -279,27 +279,48 @@ is_installed() {
 # FUNÇÃO PARA INSTALAÇÃO DE PROGRAMAS
 # ==============================================================================
 instalar_programa() {
+    local programas_instalados=()
+    local programas_sucesso=()
+    local programas_erro=()
+
     for programa in "$@"; do
         programa_maiusculo=$(echo "$programa" | tr '[:lower:]' '[:upper:]')
 
         if is_installed "$programa"; then
-            echo_green "$programa_maiusculo JÁ ESTÁ INSTALADO."
+            programas_instalados+=("$programa_maiusculo")
         else
-
             exec 3>&1
             {
-            	sudo apt-get install -y -qq "$programa" </dev/null >/dev/null 2>&1
+                sudo apt-get install -y -qq "$programa" </dev/null >/dev/null 2>&1
             } 2>&1 &
-
             local pid=$!
 
             if show_progress "INSTALANDO $programa_maiusculo..." $pid; then
-                echo_green "$programa_maiusculo INSTALADO COM SUCESSO."
+                programas_sucesso+=("$programa_maiusculo")
             else
-                echo_red "ERRO AO INSTALAR $programa_maiusculo."
+                programas_erro+=("$programa_maiusculo")
             fi
         fi
     done
+
+    # Exibir resultados agrupados
+    if (( ${#programas_instalados[@]} == 1 )); then
+        echo_green "${programas_instalados[0]} JÁ ESTÁ INSTALADO."
+    elif (( ${#programas_instalados[@]} > 1 )); then
+        echo_green "$(printf "%s " "${programas_instalados[@]}") JÁ ESTÃO INSTALADOS."
+    fi
+
+    if (( ${#programas_sucesso[@]} == 1 )); then
+        echo_green "${programas_sucesso[0]} INSTALADO COM SUCESSO."
+    elif (( ${#programas_sucesso[@]} > 1 )); then
+        echo_green "$(printf "%s " "${programas_sucesso[@]}") INSTALADOS COM SUCESSO."
+    fi
+
+    if (( ${#programas_erro[@]} == 1 )); then
+        echo_red "ERRO AO INSTALAR ${programas_erro[0]}."
+    elif (( ${#programas_erro[@]} > 1 )); then
+        echo_red "ERRO AO INSTALAR: $(printf "%s " "${programas_erro[@]}")."
+    fi
 }
 
 

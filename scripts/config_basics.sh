@@ -1,5 +1,5 @@
 config_zsh() {
-    print_log "$(log_info)" "$(echo_red "CONFIGURANDO ZSH")"
+    print_log "$(log_info)" "$(echo_orange "CONFIGURANDO ZSH")"
 
     # Executa tudo em um único subshell
     (
