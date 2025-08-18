@@ -229,6 +229,7 @@ apt_update() {
 # ==============================================================================
 apt_upgrade() {
     local upgrade_count="$1"
+    echo "leo"
 
     # executa tudo em subshell e captura o PID
     (
