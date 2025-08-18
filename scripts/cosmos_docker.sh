@@ -167,8 +167,7 @@ EOF
         curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar binário do Cosmos.")" && exit 1; }
         curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}.md5" -o "/tmp/${ZIP_FILE}.md5" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao baixar o arquivo MD5.")" && exit 1; }
 
-        cd /tmp
-        if ! md5sum -c "${ZIP_FILE}.md5" >/dev/null 2>&1; then
+        if ! md5sum -c "/tmp/${ZIP_FILE}.md5" >/dev/null 2>&1; then
             print_log "$(log_error)" "$(echo_red "ERRO: Verificação de MD5 falhou.")"
             exit 1
         fi

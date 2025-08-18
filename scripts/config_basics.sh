@@ -1,75 +1,59 @@
 config_zsh() {
-    print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO ZSH")"
+    print_log "$(log_info)" "$(echo_red "CONFIGURANDO ZSH")"
 
-    # Verifica e limpa instalação corrompida
-    if [ -d "$ZSH_DIR" ] && [ ! -f "$ZSH_SCRIPT" ]; then
-        print_log "$(log_info)" "$(echo_orange "Detectada instalação incompleta. Preparando reinstalação...")"
-        rm -rf "$ZSH_DIR" >/dev/null 2>&1
-    fi
-
-    # Instalação do Oh My Zsh
-    if [ ! -d "$ZSH_DIR" ]; then
-        # Configura zsh como shell padrão
-        if ! sudo chsh -s $(which zsh) $USER >/dev/null 2>&1; then
-            print_log "$(log_error)" "$(echo_red "Erro ao trocar o shell para ZSH. Certifique-se de que o ZSH está instalado.")"
-            return 1
+    # Executa tudo em um único subshell
+    (
+        # Verifica e limpa instalação corrompida
+        if [ -d "$ZSH_DIR" ] && [ ! -f "$ZSH_SCRIPT" ]; then
+            print_log "$(log_info)" "$(echo_orange "Detectada instalação incompleta. Preparando reinstalação...")"
+            rm -rf "$ZSH_DIR" >/dev/null 2>&1
         fi
 
-        exec 3>&1
-        {
-            # 2. Use a variável de ambiente ZSH para forçar a instalação no novo local
+        # Instalação do Oh My Zsh
+        if [ ! -d "$ZSH_DIR" ]; then
+            # Configura zsh como shell padrão
+            sudo chsh -s "$(which zsh)" "$USER" >/dev/null 2>&1 || {
+                print_log "$(log_error)" "$(echo_red "Erro ao trocar o shell para ZSH. Certifique-se de que o ZSH está instalado.")"
+                exit 1
+            }
+
+            # Instala Oh My Zsh silenciosamente
             ZSH="$ZSH_DIR" sh -c "$(wget -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended >/dev/null 2>&1
-        } 2>&1 &
-        local pid=$!
-
-        if ! show_progress "Instalando Oh My Zsh..." "$pid"; then
-            print_log "$(log_error)" "$(echo_red "Erro ao instalar Oh My Zsh")"
-            return 1
         fi
-    else
-        print_log "$(log_info)" "$(echo_yellow "Oh My Zsh já está instalado.")"
-    fi
 
+        # Configura o .zshrc
+        if [ -f "$HOME/.zshrc" ]; then
+            cp -f "$HOME/.zshrc" "$HOME/.zshrc.bak" >/dev/null 2>&1
+        fi
+        cp -f "$CLONE_DIR/configs/.zshrc" "$HOME/" >/dev/null 2>&1 || {
+            print_log "$(log_error)" "$(echo_red "Falha ao copiar .zshrc")"
+            exit 1
+        }
 
-
-    # Configura o zshrc
-    if [ -f "$HOME/.zshrc" ]; then
-        cp -f "$HOME/.zshrc" "$HOME/.zshrc.bak" >/dev/null 2>&1
-    fi
-
-    cp -f $CLONE_DIR/configs/.zshrc "$HOME/" || { print_log "$(log_error)" "$(echo_red "Falha ao copiar .zshrc")"; exit 1; }
-
-
-    # fazer verificação para nao ter reinstalação desnecessaria
-    # Configurar plugins silenciosamente
-    exec 3>&1
-    {
-        if ! mkdir -p "$PLUGIN_ZSH_DIR" >/dev/null 2>&1; then
+        # Configura plugins
+        mkdir -p "$PLUGIN_ZSH_DIR" >/dev/null 2>&1 || {
             print_log "$(log_error)" "$(echo_red "Erro ao criar diretório para plugins.")"
-            return 1
-        fi
+            exit 1
+        }
 
         for plugin in "zsh-autosuggestions" "zsh-syntax-highlighting"; do
             if [ ! -d "$PLUGIN_ZSH_DIR/$plugin" ]; then
-                # Clona o repositório como o usuário original
-                if ! git clone -q "https://github.com/zsh-users/$plugin" "$PLUGIN_ZSH_DIR/$plugin"; then
+                git clone -q "https://github.com/zsh-users/$plugin" "$PLUGIN_ZSH_DIR/$plugin" || {
                     print_log "$(log_error)" "$(echo_red "Erro ao instalar o plugin '$plugin'.")"
-                    return 1
-                fi
+                    exit 1
+                }
             else
-                print_log "$(log_info)" "$(echo_orange "Atualizando o plugin '$plugin'...")"
-                # Atualiza o plugin como o usuário original
-                if ! cd "$PLUGIN_ZSH_DIR/$plugin" && git pull -q; then
+                git -C "$PLUGIN_ZSH_DIR/$plugin" pull -q || {
                     print_log "$(log_error)" "$(echo_red "Erro ao atualizar o plugin '$plugin'.")"
-                    return 1
-                fi
+                    exit 1
+                }
             fi
         done
-
-    } 2>&1 &
+    ) &
     local pid=$!
 
-    if show_progress "Configurando plugins..." "$pid"; then
+    # Spinner único para toda a configuração
+    if show_progress "Configurando ZSH..." "$pid"; then
         print_log "$(log_success)" "$(echo_green "ZSH configurado com sucesso!")"
         echo
     else
@@ -78,6 +62,7 @@ config_zsh() {
         return 1
     fi
 }
+
 
 # fazer verificação do bashrc
 # Função para copiar arquivo bash
@@ -94,7 +79,6 @@ func_geral() {
 
 # Função para termux
 func_termux() {
-    print_log "$(log_aviso)" "$(echo_red "INSTALANDO PROGRAMAS ESSENCIAIS DO TERMUX...")"
     (
         pkg install root-repo x11-repo termux-api "${zsh_install[@]}" -y >/dev/null 2>&1
         cp -fr $CLONE_DIR/configs/.termux "$HOME/"
@@ -169,11 +153,11 @@ func_pc() {
     fi
 
     # Telegram
-    cd "$CLONE_DIR" || { print_log "$(log_error)" "$(echo_red "Falha ao entrar no diretório $CLONE_DIR")"; exit 1; }
     (
-      wget -O telegram.tar.xz https://telegram.org/dl/desktop/linux >/dev/null 2>&1
-      tar xf telegram.tar.xz >/dev/null 2>&1
+      wget -O "$CLONE_DIR/telegram.tar.xz" https://telegram.org/dl/desktop/linux >/dev/null 2>&1
+      tar xf "$CLONE_DIR/telegram.tar.xz" -C "$CLONE_DIR" >/dev/null 2>&1
     ) &
+
     local pid8=$!
     if ! show_progress "Instalando Telegram" "$pid8"; then
         print_log "$(log_error)" "$(echo_red "Falha ao instalar Telegram.")"
@@ -215,7 +199,7 @@ func_pc_rasp() {
 
 # Função para configurar temas, ícones e wallpapers.
 config_theme() {
-    print_log "$(log_aviso)" "$(echo_orange "Clonando / Atualizando repositórios de temas, ícones e wallpapers...")"
+    print_log "$(log_info)" "$(echo_orange "Clonando / Atualizando repositórios de temas, ícones e wallpapers...")"
     echo_orange "Flat-Remix, Flat-Remix-GTK, LeonardHM/custom"
     # Cria um subshell para executar as operações em segundo plano.
     # O `&` no final envia o subshell para o background, e seu PID é armazenado.

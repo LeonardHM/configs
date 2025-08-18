@@ -134,7 +134,7 @@ show_banner_info() {
     (( ${#line} > max_len )) && max_len=${#line}
   done
 
-  local padding=1
+  local padding=4
   local width=$((max_len + padding))
   local top="╔$(printf '═%.0s' $(seq 1 $width))╗"
   local mid="╠$(printf '═%.0s' $(seq 1 $width))╣"

@@ -246,7 +246,6 @@ main() {
                 apt_update
                 echo
                 instalar_programa "${basic_install[@]}"
-                echo
                 func_pc
                 func_pc_rasp
                 func_geral
@@ -255,7 +254,6 @@ main() {
                 apt_update
                 echo
                 instalar_programa "${basic_install[@]}"
-                echo
                 func_pc_rasp
                 func_geral
                 ;;
