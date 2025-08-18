@@ -219,7 +219,7 @@ apt_update() {
              print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
-        printf "%s\n" "$count"
+        echo "$count" >&3
     fi
 }
 
