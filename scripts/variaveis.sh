@@ -33,6 +33,8 @@ PIHOLE_DNS="192.168.1.1"
 
 # Compartilhar internet por eth
 # tornar mais modular para aceitar outras conexões além da 1
+# Detecta a conexão de rede cabeada
+conexao_lan=$(nmcli con show --active | grep ethernet | awk '{print $1}')
 conexao_lan=$(nmcli connection show | grep -E "Conexão cabeada 1|Wired connection 1" | awk '{print $1,$2,$3}')
 
 # Token Cloudflared Tunnel

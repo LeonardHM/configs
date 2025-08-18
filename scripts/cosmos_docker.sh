@@ -190,14 +190,7 @@ EOF
         sudo chmod +x /opt/cosmos/cosmos || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao definir permissões do binário.")" && exit 1; }
         sudo rm -f "${ZIP_FILE}" "${ZIP_FILE}.md5"
 
-        # Instalar e iniciar o serviço do Systemd, e habilitar o serviço no boot.
-        if systemctl is-enabled CosmosCloud.service >/dev/null 2>&1; then
-        else
-            sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || {
-                print_log "$(log_error)" "$(echo_red "Falha ao instalar o serviço Systemd do Cosmos.")"
-                exit 1
-            }
-        fi
+        sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
 
         # Reinicia o daemon do systemd para que ele reconheça o novo serviço.
         sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao recarregar o Systemd.")" && exit 1; }
@@ -266,6 +259,7 @@ servidor_config() {
     fi
 
     print_log "$(log_success)" "$(echo_green "Contêiner 'Home-Assistant' detectado. Prosseguindo com a configuração...")"
+    echo
 
     configurar_home_assistant
 

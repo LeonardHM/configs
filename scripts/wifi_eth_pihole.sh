@@ -35,9 +35,6 @@ configurar_wifi() {
 compartilhar_internet() {
     print_log "$(log_aviso)" "$(echo_red "COMPARTILHANDO INTERNET POR ETH0 SEM PI-HOLE")"
 
-    # Detecta a conexão de rede cabeada
-    conexao_lan=$(nmcli con show --active | grep ethernet | awk '{print $1}')
-
     if [ -n "$conexao_lan" ]; then
         print_log "$(log_info)" "$(echo_orange "Ativando compartilhamento de internet na conexão: $conexao_lan")"
         # Ativa o compartilhamento de Internet na conexão identificada
@@ -47,13 +44,6 @@ compartilhar_internet() {
         sudo nmcli con reload "$conexao_lan" >/dev/null 2>&1
         sudo nmcli con up "$conexao_lan" >/dev/null 2>&1
 
-        # Configurar dhcpcd.conf
-        print_log "$(log_info)" "$(echo_orange "Configurando dhcpcd.conf para IP estático...")"
-        cat <<EOF | sudo tee /etc/dhcpcd.conf >/dev/null
-interface eth0
-static ip_address="$SHARED_IP_ADDRESS"
-nogateway
-EOF
         sudo systemctl restart NetworkManager >/dev/null 2>&1
         print_log "$(log_success)" "$(echo_green "Compartilhamento de Internet ativado com sucesso em: "$conexao_lan"")"
         echo

@@ -207,7 +207,6 @@ apt_update() {
     exec 3>&1
     { sudo apt-get update -qq; } 2>&1 &
     local pid=$!
-    echo_orange "PID $pid"
 
     if show_progress "Atualizando repositórios..." $pid; then
         local count=$(apt list --upgradable 2>/dev/null | wc -l)
@@ -279,7 +278,6 @@ instalar_programa() {
             } 2>&1 &
 
             local pid=$!
-            echo_orange "PID $pid"
 
             if show_progress "INSTALANDO $programa_maiusculo..." $pid; then
                 echo_green "$programa_maiusculo INSTALADO COM SUCESSO."
