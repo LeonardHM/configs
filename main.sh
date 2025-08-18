@@ -198,6 +198,7 @@ main() {
         echo
     else
         print_log "$(log_info)" "$(echo_green "Nenhuma ação selecionada para executar. Saindo...")"
+        echo
         exit 0
     fi
 

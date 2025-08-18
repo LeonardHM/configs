@@ -216,6 +216,7 @@ apt_update() {
              print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
+        # quero remover esse echo sem danufucar apt_upgrade
         echo "$count"
     fi
 }
