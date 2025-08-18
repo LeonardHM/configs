@@ -176,8 +176,6 @@ show_progress() {
     local spinstr='-\|/'
     local current_status
 
-    printf "\n"
-
     set +m
 
     while ps -p "$pid" > /dev/null 2>&1; do
