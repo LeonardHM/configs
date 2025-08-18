@@ -170,8 +170,6 @@ trap 'handle_error ${LINENO}' ERR
 # ==============================================================================
 # FUNÇÃO GLOBAL DE PROGRESSO
 # ==============================================================================
-
-
 show_progress() {
     local msg="$1"
     local pid="$2"
@@ -204,27 +202,6 @@ show_progress() {
 }
 
 
-
-
-show_progress2() {
-    local message="$1"
-    local pid="$2"
-
-    spin='-\|/'
-    i=0
-    tput civis  # esconde cursor
-    while kill -0 "$pid" 2>/dev/null; do
-        i=$(( (i+1) %4 ))
-        printf "\r%s %s" "${spin:$i:1}" "$message"
-        sleep 0.2
-    done
-    tput cnorm  # mostra cursor
-    printf "\r✅ %s\n" "$message"
-}
-
-
-
-
 # ==============================================================================
 # FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
 # ==============================================================================
@@ -251,14 +228,14 @@ apt_update() {
 # ==============================================================================
 # FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
 # ==============================================================================
-apt_upgrade2() {
+apt_upgrade() {
     local upgrade_count="$1"
 
     # executa tudo em subshell e captura o PID
     (
         # Verifica se há atualizações a serem feitas
         if [[ "$upgrade_count" -le 0 ]]; then
-            print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
+
             return 0
         fi
 
@@ -286,30 +263,6 @@ apt_upgrade2() {
 
 
 
-apt_upgrade() {
-    local upgrade_count="$1"
-
-    if [[ "$upgrade_count" -le 0 ]]; then
-        print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
-        return 0
-    fi
-
-    # Mostra pacotes a remover
-    sudo apt upgrade --assume-no | grep -E "removido|remove" || true
-
-    # roda upgrade completo em background
-    (
-        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
-        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
-    ) &
-    local pid=$!
-
-    show_progress "Atualizando sistema..." "$pid"
-
-    print_log "$(log_success)" "$(echo_green "Sistema atualizado com sucesso.")"
-    return 0
-}
 
 
 
