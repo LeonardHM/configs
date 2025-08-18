@@ -134,7 +134,7 @@ show_banner_info() {
     (( ${#line} > max_len )) && max_len=${#line}
   done
 
-  local padding=4
+  local padding=9
   local width=$((max_len + padding))
   local top="╔$(printf '═%.0s' $(seq 1 $width))╗"
   local mid="╠$(printf '═%.0s' $(seq 1 $width))╣"
@@ -267,39 +267,6 @@ apt_upgrade() {
     print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
     return 0
 }
-
-
-
-
-apt_upgrade2() {
-    local upgrade_count="$1"
-
-    if [[ "$upgrade_count" -le 0 ]]; then
-        print_log "$(log_success)" "$(echo_green "Sistema já está atualizado.")"
-        return 0
-    fi
-
-    (
-        # Mostra pacotes que serão atualizados, removidos e instalados
-        sudo apt upgrade --assume-no | grep -E "removido|remove" || true
-
-        # Executa as atualizações
-        sudo apt upgrade -y -qq >/dev/null 2>&1
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1
-        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
-    ) &
-    local pid=$!
-
-    if ! show_progress "Atualizando sistema..." "$pid"; then
-        print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
-        return 1
-    fi
-
-    print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
-}
-
-
-
 
 
 # ==============================================================================

@@ -244,6 +244,7 @@ main() {
         case "$SISTEMA_TIPO" in
             *[Pp][Cc]*)
                 apt_update
+                echo
                 instalar_programa "${basic_install[@]}"
                 echo
                 func_geral
@@ -252,6 +253,7 @@ main() {
                 ;;
             *[Rr][Aa][Ss][Pp][Bb][Ee][Rr][Rr][Yy]*)
                 apt_update
+                echo
                 instalar_programa "${basic_install[@]}"
                 echo
                 func_geral
