@@ -231,7 +231,7 @@ main() {
         print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA")"
 
         local upgrade_count
-        upgrade_count=$(apt_update)
+        upgrade_count=$(apt_update 3>&1 1>/dev/null)
 
         apt_upgrade "$upgrade_count"
         echo
