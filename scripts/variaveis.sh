@@ -17,8 +17,8 @@
 # Configurações de WiFi {SSID:PSK:PRIORITY}
 # Defina como array vazio se não houver redes padrão, ou com seus valores.
 WIFI_CONFIGS=(
-    "teSt:123456789:7"
-    "test-5G:abcdef:9"
+    ""
+    ""
 )
 
 # IPs para a conexão Wi-Fi
