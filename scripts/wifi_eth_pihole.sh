@@ -1,6 +1,5 @@
 # Função para configurar conexões Wi-Fi
 configurar_wifi() {
-    print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO CONEXÕES WI-FI")"
     local total=${#WIFI_CONFIGS[@]}
     local current=0
 

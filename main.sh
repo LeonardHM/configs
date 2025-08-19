@@ -209,9 +209,53 @@ main() {
     # ===============================================
 
     # Conectar e configurar Wi-Fi
+
+
     if [[ "$conectar_wifi" =~ ^[Yy]$ ]]; then
+        print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO CONEXÕES WI-FI")"
+
+        # Se não foi passado WIFI_CONFIGS via argumento
+        if [[ -z "$WIFI_CONFIGS" ]]; then
+            echo_orange "Nenhuma configuração Wi-Fi foi definida."
+            read -p "Digite no formato <SSID:PSK:PRIORITY> (ex: MinhaRede:12345678:10): " USER_WIFI
+            if [[ -n "$USER_WIFI" ]]; then
+                WIFI_CONFIGS=("$USER_WIFI")
+            else
+                print_log "$(log_error)" "$(echo_red "ERRO: Nenhuma configuração de Wi-Fi informada. Cancelando.")"
+                exit 1
+            fi
+        fi
+
+        # Perguntar se deseja modificar rede (IP, Gateway, DNS)
+        echo_orange "Deseja modificar as configurações de rede (IP, Gateway, DNS)? [y/N]"
+        read -r MODIFY_NET
+
+        if [[ "$MODIFY_NET" =~ ^[Yy]$ ]]; then
+            read -p "Digite o endereço IP (ex: 192.168.15.20/24) [padrão: $WIFI_IP_ADDRESS]: " NEW_IP
+            [[ -n "$NEW_IP" ]] && WIFI_IP_ADDRESS="$NEW_IP"
+
+            read -p "Digite o Gateway (ex: 192.168.15.1) [padrão: $WIFI_GATEWAY]: " NEW_GW
+            [[ -n "$NEW_GW" ]] && WIFI_GATEWAY="$NEW_GW"
+
+            read -p "Digite os DNS separados por vírgula (ex: 8.8.8.8,1.1.1.1) [padrão: $WIFI_DNS]: " NEW_DNS
+            [[ -n "$NEW_DNS" ]] && WIFI_DNS="$NEW_DNS"
+        else
+            echo_orange "Mantendo as configurações padrão de rede."
+        fi
+
         configurar_wifi
     fi
+
+
+
+
+
+
+
+
+
+
+
 
     # Compartilhar internet via LAN, com ou sem Pi-hole
     if [[ "$compartilhar_internet_lan" =~ ^[Yy]$ ]]; then
