@@ -116,6 +116,7 @@ commands_alexa() {
         if [[ "$choice" =~ ^[Yy]$ ]]; then
             TRIGGERCMD_ATTEMPTS=0
             while [ $TRIGGERCMD_ATTEMPTS -lt 3 ]; do
+                echo
                 read -p "Digite o novo token do TriggerCMD: " TRIGGERCMD_NEW_TOKEN
                 if [ -n "$TRIGGERCMD_NEW_TOKEN" ]; then
                     sudo rm -f "$TRIGGERCMD_TOKEN_FILE" "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
@@ -148,6 +149,7 @@ commands_alexa() {
         print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
         TRIGGERCMD_ATTEMPTS=0
         while [ $TRIGGERCMD_ATTEMPTS -lt 3 ]; do
+            echo
             read -p "Digite o token do TriggerCMD: " TRIGGERCMD_INTERACTIVE_TOKEN
             if [ -n "$TRIGGERCMD_INTERACTIVE_TOKEN" ]; then
                 sudo rm -f "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
