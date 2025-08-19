@@ -241,6 +241,7 @@ apt_upgrade() {
     # Mostra pacotes que serão atualizados, removidos e instalados
     sudo apt upgrade --assume-no 2>&1 | grep "upgraded," || true
 
+    sleep 10
     # Executa o processo de atualização de forma silenciosa em segundo plano.
     (
         sudo apt upgrade -y -qq >/dev/null 2>&1 && \
