@@ -324,24 +324,27 @@ update_full_system() {
 
         if [[ "$count" -gt 0 ]]; then
             print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
-            
+
             # Executa a atualização completa
             sudo apt upgrade --assume-no | grep -E "removido|remove" || true
             sudo apt upgrade -y -qq
             sudo apt full-upgrade -y -qq
             sudo apt dist-upgrade -y -qq
-            print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
-        else
-            print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
+
         fi
     } 2>&1 &
     local pid=$!
 
     # Mostra o spinner enquanto tudo roda em segundo plano
     if ! show_progress "Atualizando sistema..." "$pid"; then
-        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
         return 1
     fi
+
+    print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
+    return 0
+
+
     echo
 }
 
