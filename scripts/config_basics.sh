@@ -1,6 +1,4 @@
 config_zsh() {
-    print_log "$(log_info)" "$(echo_orange "Configurando ZSH")"
-
     # Executa tudo em um único subshell
     (
         # Verifica e limpa instalação corrompida
