@@ -112,6 +112,7 @@ commands_alexa() {
 
     elif [ -f "$TRIGGERCMD_TOKEN_FILE" ]; then
         # Caso já exista um token salvo
+        echo
         read -p "Já existe um token em $TRIGGERCMD_TOKEN_FILE. Deseja atualizar? (y/N): " choice
         if [[ "$choice" =~ ^[Yy]$ ]]; then
             TRIGGERCMD_ATTEMPTS=0
@@ -136,6 +137,7 @@ commands_alexa() {
             if [ $TRIGGERCMD_ATTEMPTS -eq 3 ]; then
                 echo
                 print_log "$(log_error)" "$(echo_red "Nenhum token válido fornecido após 3 tentativas. Cancelando atualização.")"
+                echo
                 return 1
             fi
         else
@@ -146,6 +148,7 @@ commands_alexa() {
 
     else
         # Modo interativo, caso não exista token
+        echo
         print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
         TRIGGERCMD_ATTEMPTS=0
         while [ $TRIGGERCMD_ATTEMPTS -lt 3 ]; do
@@ -169,6 +172,7 @@ commands_alexa() {
         if [ $TRIGGERCMD_ATTEMPTS -eq 3 ]; then
             echo
             print_log "$(log_error)" "$(echo_red "Nenhum token válido fornecido após 3 tentativas. Cancelando.")"
+            echo
             return 1
         fi
     fi
