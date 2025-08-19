@@ -308,45 +308,63 @@ apt_upgrade() {
 # ==============================================================================
 # FUNÇÃO PARA ATUALIZAÇÃO COMPLETA DO SISTEMA
 # ==============================================================================
+
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO COMPLETA DO SISTEMA
+# ==============================================================================
 update_full_system() {
     print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO REPOSITÓRIOS E PACOTES DO SISTEMA")"
 
-    # Inicia a atualização em segundo plano e captura o PID
+    # Etapa 1: Atualiza os repositórios (isso pode ser monitorado pelo spinner)
     exec 3>&1
-    {
-        # Atualiza a lista de pacotes
-        sudo apt-get update -qq
-
-        # Conta os pacotes atualizáveis
-        local count
-        count=$(apt list --upgradable 2>/dev/null | wc -l)
-        count=$((count - 1))
-
-        if [[ "$count" -gt 0 ]]; then
-            print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
-
-            # Executa a atualização completa
-            sudo apt upgrade --assume-no | grep -E "removido|remove" || true
-            sudo apt upgrade -y -qq
-            sudo apt full-upgrade -y -qq
-            sudo apt dist-upgrade -y -qq
-
-        fi
-    } 2>&1 &
+    { sudo apt-get update -qq; } 2>&1 &
     local pid=$!
 
-    # Mostra o spinner enquanto tudo roda em segundo plano
-    if ! show_progress "Atualizando sistema..." "$pid"; then
+    if ! show_progress "Atualizando repositórios..." "$pid"; then
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+        return 1
+    fi
+
+    # Etapa 2: Conta os pacotes e exibe a mensagem de log
+    local count
+    count=$(apt list --upgradable 2>/dev/null | wc -l)
+    count=$((count - 1))
+
+    if [[ "$count" -le 0 ]]; then
+        print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
+        echo
+        return 0
+    fi
+
+    # Se houver pacotes, exibe a contagem
+    print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
+
+    # Etapa 3: Inicia a atualização dos pacotes (monitorado por outro spinner)
+    exec 3>&1
+    {
+        # Mostra pacotes que serão atualizados, removidos e instalados
+        sudo apt upgrade --assume-no | grep -E "removido|remove" || true
+        
+        # Executa a atualização
+        sudo apt upgrade -y -qq >/dev/null 2>&1
+        sudo apt full-upgrade -y -qq >/dev/null 2>&1
+        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
+    } 2>&1 &
+    local pid_upgrade=$!
+
+    if ! show_progress "Atualizando sistema..." "$pid_upgrade"; then
         print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
         return 1
     fi
 
     print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
-    return 0
-
-
     echo
+    return 0
 }
+
+
+
+
 
 
 
