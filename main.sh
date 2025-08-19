@@ -228,7 +228,8 @@ main() {
 
     # Atualizar o sistema
     if [[ "$update_system" =~ ^[Yy]$ ]]; then
-        update_full_system
+        apt_update
+        apt_upgrade
     fi
 
     # Instalar programas básicos e Zsh
