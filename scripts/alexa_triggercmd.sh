@@ -19,7 +19,7 @@ PHRASE_TO_CHECK='"reiniciar raspberry"'
 
 
 commands_alexa() {
-    local USER_TOKEN="$1"
+    local TRIGGERCMD_USER_TOKEN="$1"
 
     print_log "$(log_aviso)" "$(echo_red "CONFIGURANDO INTEGRAÇÃO COM ALEXA...")"
 
@@ -44,9 +44,9 @@ commands_alexa() {
 
     # Define o diretório de configuração para root
     CONFIG_DIR="/root/.TRIGGERcmdData"
-    TOKEN_FILE="$CONFIG_DIR/token.tkn"
+    TRIGGERCMD_TOKEN_FILE="$CONFIG_DIR/token.tkn"
     COMMANDS_FILE="$CONFIG_DIR/commands.json"
-    COMPUTERID_FILE="$CONFIG_DIR/computerid.cfg"
+    TRIGGERCMD_COMPUTERID_FILE="$CONFIG_DIR/computerid.cfg"
 
     # Garante que o diretório de configuração exista e tenha as permissões corretas
     sudo mkdir -p "$CONFIG_DIR"
