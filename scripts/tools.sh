@@ -198,9 +198,8 @@ show_progress() {
     fi
 }
 
-
 # ==============================================================================
-# FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
+# FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITÓRIOS
 # ==============================================================================
 apt_update() {
     # Inicia a atualização em segundo plano
@@ -270,17 +269,81 @@ apt_upgrade() {
 
 
 
-    # Atualizar o sistema
-#    if [[ "$update_system" =~ ^[Yy]$ ]]; then
-#        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA")"
-#
-#        local upgrade_count
-#        upgrade_count=$(apt_update 3>&1 1>/dev/null)
-#
-#        apt_upgrade "$upgrade_count"
-#        echo
-#    fi
 
+
+
+
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO DOS REPOSITORIOS
+# ==============================================================================
+apt_update2() {
+    # Inicia a atualização em segundo plano
+    exec 3>&1
+    { sudo apt-get update -qq; } 2>&1 &
+    local pid=$!
+
+    # Mostra o spinner enquanto a atualização roda
+    if show_progress "Atualizando repositórios..." "$pid"; then
+        # Conta pacotes atualizáveis
+        local count
+        count=$(apt list --upgradable 2>/dev/null | wc -l)
+        count=$((count - 1))
+
+        if [[ "$count" -gt 0 ]]; then
+            print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
+        else
+            print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
+        fi
+
+        # Retorna o valor apenas se a função for chamada em contexto de captura
+        if [[ -t 1 ]]; then
+            : # nada a fazer, evita imprimir no terminal
+        else
+            echo "$count"
+        fi
+    else
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+        return 1
+    fi
+}
+
+
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
+# ==============================================================================
+apt_upgrade2() {
+    local upgrade_count="$1"
+
+    # executa tudo em subshell e captura o PID
+    (
+        # Verifica se há atualizações a serem feitas
+        if [[ "$upgrade_count" -le 0 ]]; then
+            return 0
+        fi
+
+        # Mostra pacotes que serão atualizados, removidos e instalados
+        sudo apt upgrade --assume-no | grep -E "removido|remove" || true
+
+        # Executa as atualizações
+        sudo apt upgrade -y -qq >/dev/null 2>&1
+        sudo apt full-upgrade -y -qq >/dev/null 2>&1
+        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
+    ) &
+    local pid=$!
+
+    if ! show_progress "Atualizando sistema..." "$pid"; then
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
+        return 1
+    fi
+
+    print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
+    return 0
+}
+
+
+
+
+#apt_update ja sabe quantos programas precisa atualiza e se nao precisa, ja tem o proprio spinner. apos apt_update  executado, saberemos se podemos prosseguir para apt_upgrade. ou seja a logica e se update_system for sim, ele chama apt_update que atualiza o repositorio conta os pacotes e exibe o proprio spinner. se apt_update informar que a atualizacoes a serem feitas, entao apt_upgrade e chamado com seu proprio spinner
 
 
 
