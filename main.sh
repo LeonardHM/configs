@@ -227,45 +227,9 @@ main() {
     fi
 
     # Atualizar o sistema
-#    if [[ "$update_system" =~ ^[Yy]$ ]]; then
-#        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA")"
-#
-#        local upgrade_count
-#        upgrade_count=$(apt_update  1>/dev/null)
-#
-#        apt_upgrade "$upgrade_count"
-#        echo
-#    fi
-#
-#
-#
-#    # Atualizar o sistema
-#    if [[ "$update_system2" =~ ^[Yy]$ ]]; then
-#        update_full_system
-#    fi
-
-
-# ==============================================================================
-# TRECHO PRINCIPAL DO SCRIPT
-# ==============================================================================
-# Atualizar o sistema
     if [[ "$update_system" =~ ^[Yy]$ ]]; then
-        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA")"
-
-        # Chama apt_update e captura a contagem de pacotes
-        local upgrade_count
-        upgrade_count=$(apt_update)
-
-        # Verifica se há pacotes para atualizar e chama apt_upgrade
-        if [[ "$upgrade_count" -gt 0 ]]; then
-            apt_upgrade "$upgrade_count"
-        fi
-    
-        echo
+        update_full_system
     fi
-
-
-
 
     # Instalar programas básicos e Zsh
     if [[ "$install_basic_zsh" =~ ^[Yy]$ ]]; then
