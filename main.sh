@@ -207,8 +207,6 @@ main() {
     # ===============================================
     # EXECUÇÃO DAS FUNÇÕES COM BASE NAS VARIÁVEIS
     # ===============================================
-    #print_log "$(log_info)" "$(echo_yellow "Iniciando a execução das funções de instalação...")"
-    #echo
 
     # Conectar e configurar Wi-Fi
     if [[ "$conectar_wifi" =~ ^[Yy]$ ]]; then
@@ -229,6 +227,7 @@ main() {
     # Atualizar o sistema
     if [[ "$update_system" =~ ^[Yy]$ ]]; then
         apt_update
+        echo
         apt_upgrade
     fi
 

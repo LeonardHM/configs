@@ -97,38 +97,74 @@ commands_alexa() {
         print_log "$(log_info)" "$(echo_yellow "TriggerCMD já instalado. Pulando instalação.")"
     fi
 
-    tmpfile=$(mktemp)
-
-
-    # adicionar atualizacao do token
     # === Lógica para o token ===
-    # Prioriza o token passado como argumento/variável.
-    if [ -n "$USER_TOKEN" ]; then
+    TRIGGERCMD_TMPFILE=$(mktemp)
+    if [ -n "$TRIGGERCMD_USER_TOKEN" ]; then
+        # Caso o token seja passado via variável/argumento
         print_log "$(log_info)" "$(echo_yellow "Token fornecido via argumento/variável. Salvando/Atualizando...")"
-        sudo rm -f "$TOKEN_FILE" "$COMPUTERID_FILE" &>/dev/null
-        echo -n "$USER_TOKEN" > "$tmpfile"
-        chmod 600 "$tmpfile"
-        sudo triggercmdagent < "$tmpfile" &>/dev/null &
-        rm -f "$tmpfile"
-        print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
+        sudo rm -f "$TRIGGERCMD_TOKEN_FILE" "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
+        echo -n "$TRIGGERCMD_USER_TOKEN" > "$TRIGGERCMD_TMPFILE"
+        chmod 600 "$TRIGGERCMD_TMPFILE"
+        sudo triggercmdagent < "$TRIGGERCMD_TMPFILE" &>/dev/null &
+        rm -f "$TRIGGERCMD_TMPFILE"
+        print_log "$(log_success)" "$(echo_green "Token salvo em $TRIGGERCMD_TOKEN_FILE")"
         echo
-    elif [ -f "$TOKEN_FILE" ]; then
-        # Se nenhum token foi passado como argumento, mas o arquivo existe, usa o existente.
-        print_log "$(log_info)" "$(echo_yellow "Token já existe em $TOKEN_FILE. Pulando solicitação interativa.")"
-        sudo rm -f "$COMPUTERID_FILE" &>/dev/null
-        sudo triggercmdagent < "$TOKEN_FILE" &>/dev/null &
-    else
-        # Se nenhum token foi passado e o arquivo não existe, solicita interativamente.
-        print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
-        read -p "Digite o token do TriggerCMD: " INTERACTIVE_TOKEN
-        sudo rm -f "$COMPUTERID_FILE" &>/dev/null
-        echo -n "$INTERACTIVE_TOKEN" > "$tmpfile"
-        chmod 600 "$tmpfile"
-        sudo triggercmdagent < "$tmpfile" &>/dev/null &
-        rm -f "$tmpfile"
 
-        print_log "$(log_success)" "$(echo_green "Token salvo em $TOKEN_FILE")"
-        echo
+    elif [ -f "$TRIGGERCMD_TOKEN_FILE" ]; then
+        # Caso já exista um token salvo
+        read -p "Já existe um token em $TRIGGERCMD_TOKEN_FILE. Deseja atualizar? (s/N): " choice
+        if [[ "$choice" =~ ^[Ss]$ ]]; then
+            TRIGGERCMD_ATTEMPTS=0
+            while [ $TRIGGERCMD_ATTEMPTS -lt 3 ]; do
+                read -p "Digite o novo token do TriggerCMD: " TRIGGERCMD_NEW_TOKEN
+                if [ -n "$TRIGGERCMD_NEW_TOKEN" ]; then
+                    sudo rm -f "$TRIGGERCMD_TOKEN_FILE" "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
+                    echo -n "$TRIGGERCMD_NEW_TOKEN" > "$TRIGGERCMD_TMPFILE"
+                    chmod 600 "$TRIGGERCMD_TMPFILE"
+                    sudo triggercmdagent < "$TRIGGERCMD_TMPFILE" &>/dev/null &
+                    rm -f "$TRIGGERCMD_TMPFILE"
+                    print_log "$(log_success)" "$(echo_green "Token atualizado em $TRIGGERCMD_TOKEN_FILE")"
+                    echo
+                    break
+                fi
+                TRIGGERCMD_ATTEMPTS=$((TRIGGERCMD_ATTEMPTS+1))
+                print_log "$(log_aviso)" "$(echo_orange "Token vazio. Tentativa $TRIGGERCMD_ATTEMPTS de 3.")"
+            done
+
+            if [ $TRIGGERCMD_ATTEMPTS -eq 3 ]; then
+                print_log "$(log_error)" "$(echo_red "Nenhum token válido fornecido após 3 tentativas. Cancelando atualização.")"
+                return 1
+            fi
+        else
+            print_log "$(log_info)" "$(echo_yellow "Mantendo token existente em $TRIGGERCMD_TOKEN_FILE.")"
+            sudo rm -f "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
+            sudo triggercmdagent < "$TRIGGERCMD_TOKEN_FILE" &>/dev/null &
+        fi
+
+    else
+        # Modo interativo, caso não exista token
+        print_log "$(log_aviso)" "$(echo_orange "Nenhum token encontrado. Solicitando...")"
+        TRIGGERCMD_ATTEMPTS=0
+        while [ $TRIGGERCMD_ATTEMPTS -lt 3 ]; do
+            read -p "Digite o token do TriggerCMD: " TRIGGERCMD_INTERACTIVE_TOKEN
+            if [ -n "$TRIGGERCMD_INTERACTIVE_TOKEN" ]; then
+                sudo rm -f "$TRIGGERCMD_COMPUTERID_FILE" &>/dev/null
+                echo -n "$TRIGGERCMD_INTERACTIVE_TOKEN" > "$TRIGGERCMD_TMPFILE"
+                chmod 600 "$TRIGGERCMD_TMPFILE"
+                sudo triggercmdagent < "$TRIGGERCMD_TMPFILE" &>/dev/null &
+                rm -f "$TRIGGERCMD_TMPFILE"
+                print_log "$(log_success)" "$(echo_green "Token salvo em $TRIGGERCMD_TOKEN_FILE")"
+                echo
+                break
+            fi
+            TRIGGERCMD_ATTEMPTS=$((TRIGGERCMD_ATTEMPTS+1))
+            print_log "$(log_aviso)" "$(echo_orange "Token vazio. Tentativa $TRIGGERCMD_ATTEMPTS de 3.")"
+        done
+
+        if [ $TRIGGERCMD_ATTEMPTS -eq 3 ]; then
+            print_log "$(log_error)" "$(echo_red "Nenhum token válido fornecido após 3 tentativas. Cancelando.")"
+            return 1
+        fi
     fi
 
     # ativa o agent e o daemon

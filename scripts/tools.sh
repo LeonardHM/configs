@@ -238,7 +238,7 @@ apt_update() {
 # FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
 # ==============================================================================
 apt_upgrade() {
-    print_log "$(log_aviso)" "$(echo_orange "ATUALIZANDO PACOTES E SISTEMA...")"
+    print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA...")"
 
     # Mostra pacotes que serão atualizados, removidos e instalados
     sudo apt upgrade --assume-no 2>&1 | grep "upgraded," || true
@@ -258,6 +258,7 @@ apt_upgrade() {
 
     # Se a execução chegar aqui, a atualização foi um sucesso.
     print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
+    echo
     return 0
 }
 
