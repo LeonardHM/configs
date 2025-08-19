@@ -221,6 +221,12 @@ apt_update() {
             print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
         fi
 
+        # Retorna o valor apenas se a função for chamada em contexto de captura
+        if [[ -t 1 ]]; then
+            : # nada a fazer, evita imprimir no terminal
+        else
+            echo "$count"
+        fi
     else
         print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
         return 1
@@ -229,55 +235,31 @@ apt_update() {
 
 
 # ==============================================================================
-# FUNÇÃO PARA ATUALIZAÇÃO COMPLETA DO SISTEMA
+# FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
 # ==============================================================================
-update_full_system() {
-    print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO REPOSITÓRIOS E PACOTES DO SISTEMA")"
+apt_upgrade() {
+    print_log "$(log_aviso)" "$(echo_orange "ATUALIZANDO PACOTES E SISTEMA...")"
 
-    # Etapa 1: Atualiza os repositórios
-    exec 3>&1
-    { sudo apt-get update -qq; } 2>&1 &
+    # Mostra pacotes que serão atualizados, removidos e instalados
+    sudo apt upgrade --assume-no 2>&1 | grep "upgraded," || true
+
+    # Executa o processo de atualização de forma silenciosa em segundo plano.
+    (
+        sudo apt upgrade -y -qq >/dev/null 2>&1 && \
+        sudo apt full-upgrade -y -qq >/dev/null 2>&1 && \
+        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
+    ) &
     local pid=$!
 
-    if ! show_progress "Atualizando repositórios..." "$pid"; then
-        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+    if ! show_progress "Atualizando sistema..." "$pid"; then
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar o sistema. Verifique o log para detalhes.")"
         return 1
     fi
 
-    # Etapa 2: Conta pacotes disponíveis para upgrade
-    local count
-    count=$(apt list --upgradable 2>/dev/null | wc -l)
-    count=$((count - 1))
-
-    if [[ "$count" -gt 0 ]]; then
-        print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
-    else
-        print_log "$(log_info)" "$(echo_orange "Nenhum pacote listado para atualização direta. Verificando upgrades avançados...")"
-    fi
-
-    # Etapa 3: Executa atualização (sempre roda upgrade + full-upgrade + dist-upgrade)
-    exec 3>&1
-    {
-        # Mostra pacotes que seriam removidos (se houver)
-        sudo apt upgrade --assume-no | grep -E "removido|remove" || true
-
-        # Executa atualização silenciosa
-        sudo apt upgrade -y -qq >/dev/null 2>&1
-        sudo apt full-upgrade -y -qq >/dev/null 2>&1
-        sudo apt dist-upgrade -y -qq >/dev/null 2>&1
-    } 2>&1 &
-    local pid_upgrade=$!
-
-    if ! show_progress "Aplicando upgrades..." "$pid_upgrade"; then
-        print_log "$(log_error)" "$(echo_red "Erro durante a atualização do sistema.")"
-        return 1
-    fi
-
-    print_log "$(log_success)" "$(echo_green "Sistema atualizado (upgrade + full-upgrade + dist-upgrade).")"
-    echo
+    # Se a execução chegar aqui, a atualização foi um sucesso.
+    print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
     return 0
 }
-
 
 
 # ==============================================================================
