@@ -226,6 +226,7 @@ main() {
 
     # Atualizar o sistema
     if [[ "$update_system" =~ ^[Yy]$ ]]; then
+        print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA...")"
         apt_update
         echo
         apt_upgrade

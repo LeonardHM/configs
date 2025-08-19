@@ -238,8 +238,6 @@ apt_update() {
 # FUNÇÃO PARA ATUALIZAÇÃO DOS PROGRAMAS E SISTEMA
 # ==============================================================================
 apt_upgrade() {
-    print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO PACOTES E SISTEMA...")"
-
     # Mostra pacotes que serão atualizados, removidos e instalados
     sudo apt upgrade --assume-no 2>&1 | grep "upgraded," || true
 
