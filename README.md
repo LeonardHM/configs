@@ -1,3 +1,6 @@
+teste
+
+
 # 🤖 Automação de Configuração de Servidor
 
 Este projeto oferece um conjunto de scripts em Bash para automatizar a configuração de um servidor Linux, com foco em distribuições baseadas no Debian.
