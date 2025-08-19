@@ -305,7 +305,45 @@ apt_upgrade() {
 }
 
 
+# ==============================================================================
+# FUNÇÃO PARA ATUALIZAÇÃO COMPLETA DO SISTEMA
+# ==============================================================================
+update_full_system() {
+    print_log "$(log_aviso)" "$(echo_red "ATUALIZANDO REPOSITÓRIOS E PACOTES DO SISTEMA")"
 
+    # Inicia a atualização em segundo plano e captura o PID
+    exec 3>&1
+    {
+        # Atualiza a lista de pacotes
+        sudo apt-get update -qq
+
+        # Conta os pacotes atualizáveis
+        local count
+        count=$(apt list --upgradable 2>/dev/null | wc -l)
+        count=$((count - 1))
+
+        if [[ "$count" -gt 0 ]]; then
+            print_log "$(log_info)" "$(echo_orange "$count pacotes podem ser atualizados.")"
+            
+            # Executa a atualização completa
+            sudo apt upgrade --assume-no | grep -E "removido|remove" || true
+            sudo apt upgrade -y -qq
+            sudo apt full-upgrade -y -qq
+            sudo apt dist-upgrade -y -qq
+            print_log "$(log_success)" "$(echo_green "Sistema atualizado.")"
+        else
+            print_log "$(log_success)" "$(echo_green "Nenhum pacote precisa ser atualizado.")"
+        fi
+    } 2>&1 &
+    local pid=$!
+
+    # Mostra o spinner enquanto tudo roda em segundo plano
+    if ! show_progress "Atualizando sistema..." "$pid"; then
+        print_log "$(log_error)" "$(echo_red "Erro ao atualizar os repositórios.")"
+        return 1
+    fi
+    echo
+}
 
 
 
