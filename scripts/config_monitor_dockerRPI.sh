@@ -1,12 +1,12 @@
 install_monitor() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO E CONFIGURAÇÃO DOS MONITORES MQTT...")"
 
-    local DOCKER_REPORTER_SCRIPT="/opt/docker_mqtt_scripts/docker_reporter.sh"
-    local REPORTER_SERVICE_FILE="/etc/systemd/system/docker-mqtt-reporter.service"
-    local DOCKER_COMMAND_LISTENER_SCRIPT="/opt/docker_mqtt_scripts/docker_command_listener.sh"
-    local COMMAND_SERVICE_FILE="/etc/systemd/system/docker-mqtt-command.service"
-    local RPI_REPORTER_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
-    local RPI_REPORTER_SERVICE_LINK="/etc/systemd/system/isp-rpi-reporter.service"
+    DOCKER_REPORTER_SCRIPT="/opt/docker_mqtt_scripts/docker_reporter.sh"
+    REPORTER_SERVICE_FILE="/etc/systemd/system/docker-mqtt-reporter.service"
+    DOCKER_COMMAND_LISTENER_SCRIPT="/opt/docker_mqtt_scripts/docker_command_listener.sh"
+    COMMAND_SERVICE_FILE="/etc/systemd/system/docker-mqtt-command.service"
+    RPI_REPORTER_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
+    RPI_REPORTER_SERVICE_LINK="/etc/systemd/system/isp-rpi-reporter.service"
 
     sudo apt install mosquitto-clients -y
 
