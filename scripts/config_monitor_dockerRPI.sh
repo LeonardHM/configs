@@ -10,6 +10,8 @@ install_monitor() {
 
     sudo apt install mosquitto-clients -y
 
+    sudo apt-get install git python3 python3-pip python3-tzlocal python3-sdnotify python3-colorama python3-unidecode python3-apt python3-paho-mqtt python3-requests -y
+
     # Executar todas as etapas em um único processo em segundo plano
     {
         # --- Configuração do Docker Reporter ---
