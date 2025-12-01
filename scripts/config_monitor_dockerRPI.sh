@@ -189,7 +189,8 @@ EOF_COMMAND_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o
             sudo sed -i '/^\[Commands\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
             sudo sed -i '/^\[MQTT\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
 
-            sudo bash -c "cat << 'EOF_RPI_CONFIG' >> "${RPI_REPORTER_DIR}/config.ini"
+
+            sudo bash -c "cat << EOF_RPI_CONFIG >> "${RPI_REPORTER_DIR}/config.ini"
 
 
 [Commands]
@@ -213,11 +214,11 @@ Desligar_Computador = /bin/bash -c \"echo 'standby 0' | cec-client -s; sudo pinc
 
 [MQTT]
 
-hostname = \"${MQTT_BROKER}\"
-port = \"${MQTT_PORT}\"
-username = \"${MQTT_USER_RPI}\"
-password = '${MQTT_PASSWORD}'
-base_topic = \"${MQTT_TOPIC_RPI}\"
+hostname = ${MQTT_BROKER}
+port = ${MQTT_PORT}
+username = ${MQTT_USER_RPI}
+password = ${MQTT_PASSWORD}
+base_topic = ${MQTT_TOPIC_RPI}
 
 EOF_RPI_CONFIG" || { print_log "$(log_error)" "$(echo_red "Falha ao adicionar configurações ao config.ini.")" && exit 1; }
         fi
