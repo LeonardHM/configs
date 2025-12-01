@@ -7,21 +7,24 @@ configurar_home_assistant() {
         # 1. Instalar HACS (Home Assistant Community Store)
         if ! docker exec "$CONTAINER_NAME" bash -c "[ -d \"/config/custom_components/hacs\" ]" &> /dev/null; then
             docker exec "$CONTAINER_NAME" bash -c "wget -O - https://get.hacs.xyz | bash -" || {
-                print_log "$(log_error)" "$(echo_red "ERRO: Falha na instalação do HACS.")"
+                print_log "$(log_error)" "$(echo_red "Falha na instalação do HACS.")"
                 exit 1
             }
         fi
 
         # 2. Instalar TvTime
+        sudo mkdir -p "$HA_CC_PATH"
+        sudo mkdir -p "$HA_CC_PATH/TvTime"
+
         if [ ! -d "$HA_CC_PATH/TvTime" ]; then
-            cd /tmp || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao mudar para o diretório /tmp.")" && exit 1; }
+            cd /tmp || { print_log "$(log_error)" "$(echo_red "Falha ao mudar para o diretório /tmp.")" && exit 1; }
             git clone https://github.com/Ghau/TvTime.git tvtime_temp >/dev/null 2>&1 || {
-                print_log "$(log_error)" "$(echo_red "ERRO: Falha ao clonar o repositório TvTime.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao clonar o repositório TvTime.")"
                 exit 1
             }
             sudo rm -rf "$HA_CC_PATH/TvTime"
             sudo cp -r tvtime_temp/custom_components/TvTime "$HA_CC_PATH/" || {
-                print_log "$(log_error)" "$(echo_red "ERRO: Falha ao copiar os arquivos do TvTime.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao copiar os arquivos do TvTime.")"
                 exit 1
             }
             sudo rm -rf tvtime_temp
@@ -407,7 +410,7 @@ mqtt:
 CONFIG_BLOCK
 )
 EOF" || {
-                print_log "$(log_error)" "$(echo_red "ERRO: Falha ao adicionar configurações ao configuration.yaml.")"
+                print_log "$(log_error)" "$(echo_red "Falha ao adicionar configurações ao configuration.yaml.")"
                 exit 1
             }
         else
@@ -417,7 +420,7 @@ EOF" || {
         # 4. Reiniciar o contêiner Home Assistant
         print_log "$(log_info)" "$(echo_orange "Reiniciando o contêiner Home Assistant...")"
         docker restart "$CONTAINER_NAME" >/dev/null 2>&1 || {
-            print_log "$(log_error)" "$(echo_red "ERRO: Falha ao reiniciar o contêiner Home Assistant.")"
+            print_log "$(log_error)" "$(echo_red "Falha ao reiniciar o contêiner Home Assistant.")"
             exit 1
         }
 
