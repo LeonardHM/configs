@@ -8,6 +8,8 @@ install_monitor() {
     local RPI_REPORTER_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
     local RPI_REPORTER_SERVICE_LINK="/etc/systemd/system/isp-rpi-reporter.service"
 
+    sudo apt install mosquitto-clients -y
+
     # Executar todas as etapas em um único processo em segundo plano
     {
         # --- Configuração do Docker Reporter ---
