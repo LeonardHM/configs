@@ -16,7 +16,7 @@ install_monitor() {
     {
         # --- Configuração do Docker Reporter ---
         if [ ! -f "${DOCKER_REPORTER_SCRIPT}" ]; then
-            sudo mkdir -p /opt/docker_mqtt_scripts/ || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar diretório para scripts do Docker.")" && exit 1; }
+            sudo mkdir -p /opt/docker_mqtt_scripts/ || { print_log "$(log_error)" "$(echo_red "Falha ao criar diretório para scripts do Docker.")" && exit 1; }
             sudo bash -c "cat << 'EOF_REPORTER_SCRIPT' > ${DOCKER_REPORTER_SCRIPT}
 #!/bin/bash
 # Este script coleta informações de monitoramento do Docker e as publica em um broker MQTT.
@@ -105,8 +105,8 @@ while true; do
     get_container_stats
     sleep \"\$INTERVAL_SECONDS\"
 done
-EOF_REPORTER_SCRIPT" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o script docker_reporter.sh.")" && exit 1; }
-            sudo chmod +x "${DOCKER_REPORTER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao tornar o script docker_reporter.sh executável.")" && exit 1; }
+EOF_REPORTER_SCRIPT" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o script docker_reporter.sh.")" && exit 1; }
+            sudo chmod +x "${DOCKER_REPORTER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "Falha ao tornar o script docker_reporter.sh executável.")" && exit 1; }
         fi
 
         if [ ! -f "${REPORTER_SERVICE_FILE}" ]; then
@@ -123,7 +123,7 @@ Group=root
 
 [Install]
 WantedBy=multi-user.target
-EOF_REPORTER_SERVICE" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de serviço do Docker Reporter.")" && exit 1; }
+EOF_REPORTER_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o arquivo de serviço do Docker Reporter.")" && exit 1; }
         fi
 
         # --- Configuração do Docker Command Listener ---
@@ -155,8 +155,8 @@ mosquitto_sub -h \"\$MQTT_BROKER\" -p \"\$MQTT_PORT\" -u \"\$MQTT_USER\" -P \"\$
             ;;
     esac
 done
-EOF_COMMAND_SCRIPT" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o script docker_command_listener.sh.")" && exit 1; }
-            sudo chmod +x "${DOCKER_COMMAND_LISTENER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao tornar o script docker_command_listener.sh executável.")" && exit 1; }
+EOF_COMMAND_SCRIPT" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o script docker_command_listener.sh.")" && exit 1; }
+            sudo chmod +x "${DOCKER_COMMAND_LISTENER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "Falha ao tornar o script docker_command_listener.sh executável.")" && exit 1; }
         fi
 
         if [ ! -f "${COMMAND_SERVICE_FILE}" ]; then
@@ -173,19 +173,20 @@ Group=root
 
 [Install]
 WantedBy=multi-user.target
-EOF_COMMAND_SERVICE" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de serviço do Docker Command Listener.")" && exit 1; }
+EOF_COMMAND_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o arquivo de serviço do Docker Command Listener.")" && exit 1; }
         fi
 
         # --- Configuração do RPi-Reporter ---
         if [ ! -d "${RPI_REPORTER_DIR}" ]; then
 
             sudo git clone https://github.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon.git "${RPI_REPORTER_DIR}" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao clonar o repositório do RPi-Reporter.")" && exit 1; }
-            cd "${RPI_REPORTER_DIR}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao mudar para o diretório do RPi-Reporter.")" && exit 1; }
 
-            pip install --break-system-packages -r requirements.txt >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar dependências do RPi-Reporter.")" && exit 1; }
-            sudo cp config.{ini.dist,ini} || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de configuração do RPi-Reporter.")" && exit 1; }
+            sudo pip install --break-system-packages -r "${RPI_REPORTER_DIR}/requirements.txt" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar dependências do RPi-Reporter.")" && exit 1; }
+            
+            sudo cp "${RPI_REPORTER_DIR}/config.ini.dist" "${RPI_REPORTER_DIR}/config.ini" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de configuração do RPi-Reporter.")" && exit 1; }
 
-            sudo bash -c "cat << 'EOF_RPI_CONFIG' >> ${RPI_REPORTER_DIR}/config.ini
+            sudo bash -c "cat << 'EOF_RPI_CONFIG' >> "${RPI_REPORTER_DIR}/config.ini"
+
 
 [Commands]
 
@@ -214,20 +215,20 @@ username = \"${MQTT_USER_RPI}\"
 password = '${MQTT_PASSWORD}'
 base_topic = \"${MQTT_TOPIC_RPI}\"
 
-EOF_RPI_CONFIG" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao adicionar configurações ao config.ini.")" && exit 1; }
+EOF_RPI_CONFIG" || { print_log "$(log_error)" "$(echo_red "Falha ao adicionar configurações ao config.ini.")" && exit 1; }
         fi
 
-        sudo usermod daemon -a -G video || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao adicionar o usuário 'daemon' ao grupo 'video'.")" && exit 1; }
+        sudo usermod daemon -a -G video || { print_log "$(log_error)" "$(echo_red "Falha ao adicionar o usuário 'daemon' ao grupo 'video'.")" && exit 1; }
 
         if [ ! -L "${RPI_REPORTER_SERVICE_LINK}" ]; then
-            sudo ln -s "${RPI_REPORTER_DIR}/isp-rpi-reporter.service" "${RPI_REPORTER_SERVICE_LINK}" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o link simbólico do serviço do RPi-Reporter.")" && exit 1; }
+            sudo ln -s "${RPI_REPORTER_DIR}/isp-rpi-reporter.service" "${RPI_REPORTER_SERVICE_LINK}" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o link simbólico do serviço do RPi-Reporter.")" && exit 1; }
         fi
 
         # --- Ativar e Iniciar Serviços ---
-        sudo systemctl daemon-reload || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao recarregar o daemon do systemd.")" && exit 1; }
+        sudo systemctl daemon-reload || { print_log "$(log_error)" "$(echo_red "Falha ao recarregar o daemon do systemd.")" && exit 1; }
 
-        sudo systemctl enable docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao habilitar serviços de monitoramento.")" && exit 1; }
-        sudo systemctl start docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao iniciar serviços de monitoramento.")" && exit 1; }
+        sudo systemctl enable docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao habilitar serviços de monitoramento.")" && exit 1; }
+        sudo systemctl start docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao iniciar serviços de monitoramento.")" && exit 1; }
 
     } & # Executar tudo em um único processo em segundo plano
     local pid=$!
