@@ -2,6 +2,9 @@ configurar_home_assistant() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO A CONFIGURAÇÃO DO HOME ASSISTANT...")"
 
     CONTAINER_NAME="Home-Assistant"
+    sudo chown -R $USER:$USER "$HA_CONFIG_PATH"
+    sudo chmod -R 755 "$HA_CONFIG_PATH"
+
 
     {
         # 1. Instalar HACS (Home Assistant Community Store)
