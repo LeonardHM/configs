@@ -182,6 +182,10 @@ EOF_COMMAND_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o
             sudo git clone https://github.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon.git "${RPI_REPORTER_DIR}" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao clonar o repositório do RPi-Reporter.")" && exit 1; }
 
             sudo pip install --break-system-packages -r "${RPI_REPORTER_DIR}/requirements.txt" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar dependências do RPi-Reporter.")" && exit 1; }
+
+            # Comenta as seções [Commands] e [MQTT] existentes no arquivo inicial para evitar o erro de seção duplicada.
+            sudo sed -i '/^\[Commands\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
+            sudo sed -i '/^\[MQTT\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
             
             sudo cp "${RPI_REPORTER_DIR}/config.ini.dist" "${RPI_REPORTER_DIR}/config.ini" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de configuração do RPi-Reporter.")" && exit 1; }
 
