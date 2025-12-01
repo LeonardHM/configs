@@ -82,7 +82,7 @@ MINE_DIR="$CLONE_DIR/mine-server"
 PLUGIN_MINE_DIR="$MINE_DIR/plugins"
 DATAPACK_MINE_DIR="$MINE_DIR/datapacks"
 
-HA_CONFIG_PATH="/var/lib/docker/volumes/Home-Assistant-config/_data"
+HA_CONFIG_PATH=$(docker volume inspect --format '{{ .Mountpoint }}' Home-Assistant-config)
 HA_CC_PATH="$HA_CONFIG_PATH/custom_components"
 
 # Variaveis de instalação
