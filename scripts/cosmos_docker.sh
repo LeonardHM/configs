@@ -189,14 +189,32 @@ EOF
         sudo chmod +x /opt/cosmos/cosmos || { print_log "$(log_error)" "$(echo_red "Falha ao definir permissões do binário.")" && exit 1; }
         sudo rm -f "${ZIP_FILE}" "${ZIP_FILE}.md5"
 
-        sudo /opt/cosmos/cosmos service install >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao instalar o serviço Systemd do Cosmos.")" && exit 1; }
 
-        # Reinicia o daemon do systemd para que ele reconheça o novo serviço.
-        sudo systemctl daemon-reload >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao recarregar o Systemd.")" && exit 1; }
+        # Se o serviço já existir, para, desabilita e remove
+        if systemctl list-units --full -all | grep -q "CosmosCloud.service"; then
+            sudo systemctl stop CosmosCloud
+            sudo systemctl disable CosmosCloud
+            sudo rm -f /etc/systemd/system/CosmosCloud.service || \
+                { print_log "$(log_error)" "$(echo_red "Falha ao remover o serviço antigo CosmosCloud.")" && exit 1; }
+        fi
 
-        # Inicia e habilita o serviço em uma única etapa
-        # O '--now' faz com que ele inicie imediatamente.
-        sudo systemctl enable --now CosmosCloud >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao iniciar o serviço CosmosCloud.")" && exit 1; }
+        # Instala o serviço Cosmos
+        if ! sudo /opt/cosmos/cosmos service install; then
+            print_log "$(log_error)" "$(echo_red "Falha ao instalar o serviço Systemd do Cosmos.")"
+            exit 1
+        fi
+
+        # Recarrega o systemd
+        if ! sudo systemctl daemon-reload; then
+            print_log "$(log_error)" "$(echo_red "Falha ao recarregar o Systemd.")"
+            exit 1
+        fi
+
+        # Habilita e inicia o serviço
+        if ! sudo systemctl enable --now CosmosCloud; then
+            print_log "$(log_error)" "$(echo_red "Falha ao iniciar o serviço CosmosCloud.")"
+            exit 1
+        fi
 
     } & # Executar tudo em um único processo em segundo plano
 
