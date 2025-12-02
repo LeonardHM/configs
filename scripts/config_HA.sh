@@ -19,7 +19,7 @@ configurar_home_assistant() {
         sudo mkdir -p "$HA_CC_PATH"
 
         if [ ! -d "$HA_CC_PATH/TvTime" ]; then
-            git clone https://github.com/Ghau/TvTime.git /tmp/tvtime_temp/ >/dev/null 2>&1 || {
+            sudo git clone https://github.com/Ghau/TvTime.git /tmp/tvtime_temp/ >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha ao clonar o repositório TvTime.")"
                 exit 1
             }
