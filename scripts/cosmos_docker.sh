@@ -172,7 +172,7 @@ EOF
             exit 1
         fi
 
-        sudo unzip -oq "${ZIP_FILE}" -d /opt/cosmos >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao extrair o binário do Cosmos.")" && exit 1; }
+        sudo unzip -oq "/tmp/${ZIP_FILE}" -d /opt/cosmos >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao extrair o binário do Cosmos.")" && exit 1; }
 
         LATEST_RELEASE_NO_V=${LATEST_RELEASE#v}
 
