@@ -17,20 +17,18 @@ configurar_home_assistant() {
 
         # 2. Instalar TvTime
         sudo mkdir -p "$HA_CC_PATH"
-        sudo mkdir -p "$HA_CC_PATH/TvTime"
 
         if [ ! -d "$HA_CC_PATH/TvTime" ]; then
-            cd /tmp || { print_log "$(log_error)" "$(echo_red "Falha ao mudar para o diretório /tmp.")" && exit 1; }
-            git clone https://github.com/Ghau/TvTime.git tvtime_temp >/dev/null 2>&1 || {
+            git clone https://github.com/Ghau/TvTime.git /tmp/tvtime_temp/ >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha ao clonar o repositório TvTime.")"
                 exit 1
             }
-            sudo rm -rf "$HA_CC_PATH/TvTime"
-            sudo cp -r tvtime_temp/custom_components/TvTime "$HA_CC_PATH/" || {
+
+            sudo cp -r /tmp/tvtime_temp/custom_components/TvTime "$HA_CC_PATH/" || {
                 print_log "$(log_error)" "$(echo_red "Falha ao copiar os arquivos do TvTime.")"
                 exit 1
             }
-            sudo rm -rf tvtime_temp
+            sudo rm -rf /tmp/tvtime_temp
         fi
 
         # 3. Configurar configuration.yaml
