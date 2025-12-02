@@ -160,8 +160,8 @@ EOF
         systemctl enable --now avahi-daemon >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao iniciar/habilitar avahi-daemon.")" && exit 1; }
 
         # Download e verificação do binário do Cosmos
-        local LATEST_RELEASE=$(curl -s https://api.github.com/repos/azukaar/Cosmos-Server/releases/latest | grep "tag_name" | cut -d '"' -f 4)
-        local ZIP_FILE="cosmos-cloud-${LATEST_RELEASE#v}-${SISTEMA_ARCH}.zip"
+        LATEST_RELEASE=$(curl -s https://api.github.com/repos/azukaar/Cosmos-Server/releases/latest | grep "tag_name" | cut -d '"' -f 4)
+        ZIP_FILE="cosmos-cloud-${LATEST_RELEASE#v}-${SISTEMA_ARCH}.zip"
 
         sudo mkdir -p /opt/cosmos || { print_log "$(log_error)" "$(echo_red "Falha ao criar diretório /opt/cosmos.")" && exit 1; }
         curl -sSL "https://github.com/azukaar/Cosmos-Server/releases/download/${LATEST_RELEASE}/${ZIP_FILE}" -o "/tmp/${ZIP_FILE}" || { print_log "$(log_error)" "$(echo_red "Falha ao baixar binário do Cosmos.")" && exit 1; }
