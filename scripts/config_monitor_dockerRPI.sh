@@ -1,6 +1,8 @@
 install_monitor() {
     print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO E CONFIGURAÇÃO DOS MONITORES MQTT...")"
 
+    # fazer verificção se o usuario passou os argumentos necessarios
+
     DOCKER_REPORTER_SCRIPT="/opt/docker_mqtt_scripts/docker_reporter.sh"
     REPORTER_SERVICE_FILE="/etc/systemd/system/docker-mqtt-reporter.service"
     DOCKER_COMMAND_LISTENER_SCRIPT="/opt/docker_mqtt_scripts/docker_command_listener.sh"
