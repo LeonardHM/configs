@@ -8,9 +8,7 @@ install_monitor() {
     RPI_REPORTER_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
     RPI_REPORTER_SERVICE_LINK="/etc/systemd/system/isp-rpi-reporter.service"
 
-    sudo apt install mosquitto-clients -y
-
-    sudo apt-get install git python3 python3-pip python3-tzlocal python3-sdnotify python3-colorama python3-unidecode python3-apt python3-paho-mqtt python3-requests -y
+    instalar_programa mosquitto-clients python3 python3-pip python3-tzlocal python3-sdnotify python3-colorama python3-unidecode python3-apt python3-paho-mqtt python3-requests -y
 
     # Executar todas as etapas em um único processo em segundo plano
     {
