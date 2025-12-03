@@ -9,7 +9,7 @@ configurar_home_assistant() {
     {
         # 1. Instalar HACS (Home Assistant Community Store)
         if ! docker exec "$CONTAINER_NAME" bash -c "[ -d \"/config/custom_components/hacs\" ]" &> /dev/null; then
-            docker exec "$CONTAINER_NAME" bash -c "wget -O - https://get.hacs.xyz | bash -" || {
+            docker exec "$CONTAINER_NAME" bash -c "wget -O - https://get.hacs.xyz | bash -" >/dev/null 2>&1 || {
                 print_log "$(log_error)" "$(echo_red "Falha na instalação do HACS.")"
                 exit 1
             }
