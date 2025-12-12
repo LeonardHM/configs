@@ -47,9 +47,6 @@ http:
 frontend:
   themes: !include_dir_merge_named themes
 
-lovelace:
-  mode: yaml
-
 yahoofinance:
   scan_interval:
     minutes: 5
