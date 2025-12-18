@@ -20,89 +20,69 @@ install_monitor() {
             sudo bash -c "cat << 'EOF_REPORTER_SCRIPT' > ${DOCKER_REPORTER_SCRIPT}
 #!/bin/bash
 # Este script coleta informações de monitoramento do Docker e as publica em um broker MQTT.
+
 MQTT_BROKER=\"${MQTT_BROKER}\"
 MQTT_PORT=\"${MQTT_PORT}\"
 MQTT_USER=\"${MQTT_USER_DOCKER}\"
 MQTT_PASSWORD='${MQTT_PASSWORD}'
 MQTT_TOPIC=\"${MQTT_TOPIC_DOCKER}\"
 INTERVAL_SECONDS=${INTERVAL_SECONDS}
-CONTAINERS_PARA_MONITORAR=(
-$(printf '  "%s"\n' "${CONTAINERS_PARA_MONITORAR[@]}")
-)
+
+# Containers monitorados (lista simples, mais eficiente)
+CONTAINERS=\"$(printf '%s ' \"${CONTAINERS_PARA_MONITORAR[@]}\")\"
+
 mqtt_publish() {
-    local topic=\"\$1\"
-    local message=\"\$2\"
-    mosquitto_pub -h \"\$MQTT_BROKER\" -p \"\$MQTT_PORT\" -t \"\$topic\" -m \"\$message\" -r -u \"\$MQTT_USER\" -P \"\$MQTT_PASSWORD\"
+    mosquitto_pub \\
+        -h \"\$MQTT_BROKER\" \\
+        -p \"\$MQTT_PORT\" \\
+        -t \"\$1\" \\
+        -m \"\$2\" \\
+        -r \\
+        -u \"\$MQTT_USER\" \\
+        -P \"\$MQTT_PASSWORD\"
 }
-size_to_bytes() {
-    local size_str=\"\$1\"
-    local value=\$(echo \"\$size_str\" | sed 's/[^0-9.]//g')
-    local unit=\$(echo \"\$size_str\" | sed 's/[0-9.]//g')
-    case \"\$unit\" in
-        \"B\") echo \"\$value\" ;;
-        \"kB\") echo \"\$value * 1024\" | bc ;;
-        \"MB\") echo \"\$value * 1024 * 1024\" | bc ;;
-        \"GB\") echo \"\$value * 1024 * 1024 * 1024\" | bc ;;
-        \"TB\") echo \"\$value * 1024 * 1024 * 1024 * 1024\" | bc ;;
-        *) echo \"0\" ;;
-    esac
-}
-bytes_to_gb() {
-    local bytes=\"\$1\"
-    echo \"scale=2; \$bytes / (1024 * 1024 * 1024)\" | bc
-}
-get_docker_disk_usage() {
-    local df_output_raw=\$(docker system df 2>/dev/null)
-    local images_line=\$(echo \"\$df_output_raw\" | grep \"^Images\")
-    local images_count=\$(echo \"\$images_line\" | awk '{print \$2}')
-    local images_used_str=\$(echo \"\$images_line\" | awk '{print \$4}')
-    if [ -z \"\$images_count\" ]; then images_count=\"0\"; fi
-    if [ -z \"\$images_used_str\" ]; then images_used_str=\"0B\"; fi
-    mqtt_publish \"\${MQTT_TOPIC}/disk/images_used\" \"\$images_used_str\"
-    mqtt_publish \"\${MQTT_TOPIC}/disk/images_count\" \"\$images_count\"
-    local containers_line=\$(echo \"\$df_output_raw\" | grep \"^Containers\")
-    local containers_count=\$(echo \"\$containers_line\" | awk '{print \$2}')
-    local containers_used_str=\$(echo \"\$containers_line\" | awk '{print \$4}')
-    if [ -z \"\$containers_count\" ]; then containers_count=\"0\"; fi
-    if [ -z \"\$containers_used_str\" ]; then containers_used_str=\"0B\"; fi
-    mqtt_publish \"\${MQTT_TOPIC}/disk/containers_used\" \"\$containers_used_str\"
-    mqtt_publish \"\${MQTT_TOPIC}/disk/containers_count\" \"\$containers_count\"
-    local volumes_line=\$(echo \"\$df_output_raw\" | grep \"^Local Volumes\")
-    local volumes_count=\$(echo \"\$volumes_line\" | awk '{print \$3}')
-    local volumes_used_str=\$(echo \"\$volumes_line\" | awk '{print \$5}')
-    if [ -z \"\$volumes_count\" ]; then volumes_count=\"0\"; fi
-    if [ -z \"\$volumes_used_str\" ]; then volumes_used_str=\"0B\"; fi
-    mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_used\" \"\$volumes_used_str\"
-    mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_count\" \"\$volumes_count\"
-    local total_bytes=0
-    total_bytes=\$(echo \"\$total_bytes + \$(size_to_bytes \"\$images_used_str\")\" | bc)
-    total_bytes=\$(echo \"\$total_bytes + \$(size_to_bytes \"\$containers_used_str\")\" | bc)
-    total_bytes=\$(echo \"\$total_bytes + \$(size_to_bytes \"\$volumes_used_str\")\" | bc)
-    local TOTAL_USAGE_GB=\$(bytes_to_gb \"\$total_bytes\")
-    mqtt_publish \"\${MQTT_TOPIC}/disk/total_usage\" \"\${TOTAL_USAGE_GB}GB\"
-}
-get_container_stats() {
-    for container_name in \"\${CONTAINERS_PARA_MONITORAR[@]}\"; do
-        CONTAINER_STATUS=\$(docker inspect -f '{{.State.Status}}' \"\$container_name\" 2>/dev/null)
-        if [ -n \"\$CONTAINER_STATUS\" ]; then
-            STATS=\$(docker stats --no-stream --format \"{{.Name}}|{{.CPUPerc}}\" \"\$container_name\" 2>/dev/null)
-            if [ -n \"\$STATS\" ]; then
-                IFS=\"|\" read -r name cpu_perc <<< \"\$STATS\"
-                mqtt_publish \"\${MQTT_TOPIC}/container/\${name}/cpu_usage\" \"\$cpu_perc\"
-                mqtt_publish \"\${MQTT_TOPIC}/status/\${name}\" \"\$CONTAINER_STATUS\"
-            else
-                mqtt_publish \"\${MQTT_TOPIC}/container/\${container_name}/cpu_usage\" \"N/A\"
-                mqtt_publish \"\${MQTT_TOPIC}/status/\${container_name}\" \"\$CONTAINER_STATUS\"
-            fi
-        else
-            mqtt_publish \"\${MQTT_TOPIC}/container/\${container_name}/cpu_usage\" \"N/A\"
-            mqtt_publish \"\${MQTT_TOPIC}/status/\${container_name}\" \"not_found\"
-        fi
+
+get_docker_metrics() {
+
+    # 1) CPU (e memória opcional) – coleta em lote
+    docker stats --no-stream --format \"{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}\" \$CONTAINERS 2>/dev/null |
+    while IFS=\"|\" read -r name cpu mem; do
+        mqtt_publish \"\${MQTT_TOPIC}/container/\${name}/cpu_usage\" \"\$cpu\"
+        # Se quiser memória no futuro:
+        # mqtt_publish \"\${MQTT_TOPIC}/container/\${name}/mem_usage\" \"\$mem\"
+    done
+
+    # 2) Status dos containers
+    for c in \$CONTAINERS; do
+        STATUS=\$(docker inspect -f '{{.State.Status}}' \"\$c\" 2>/dev/null || echo \"not_found\")
+        mqtt_publish \"\${MQTT_TOPIC}/status/\${c}\" \"\$STATUS\"
+    done
+
+    # 3) Uso de disco Docker (simples e leve)
+    docker system df --format \"{{.Type}}|{{.TotalCount}}|{{.Size}}\" 2>/dev/null |
+    while IFS=\"|\" read -r type count size; do
+        case \"\$type\" in
+            Images)
+                mqtt_publish \"\${MQTT_TOPIC}/disk/images_count\" \"\$count\"
+                mqtt_publish \"\${MQTT_TOPIC}/disk/images_used\" \"\$size\"
+                ;;
+            Containers)
+                mqtt_publish \"\${MQTT_TOPIC}/disk/containers_count\" \"\$count\"
+                mqtt_publish \"\${MQTT_TOPIC}/disk/containers_used\" \"\$size\"
+                ;;
+            \"Local Volumes\")
+                mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_count\" \"\$count\"
+                mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_used\" \"\$size\"
+                ;;
+        esac
     done
 }
+
+# Loop principal
 while true; do
-    get_docker_disk_usage
-    get_container_stats
+    if systemctl is-active --quiet docker; then
+        get_docker_metrics
+    fi
     sleep \"\$INTERVAL_SECONDS\"
 done
 EOF_REPORTER_SCRIPT" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o script docker_reporter.sh.")" && exit 1; }
