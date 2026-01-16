@@ -1,228 +1,298 @@
 install_monitor() {
-    print_log "$(log_aviso)" "$(echo_red "INICIANDO A INSTALAÇÃO E CONFIGURAÇÃO DOS MONITORES MQTT...")"
+    print_log "$(log_aviso)" "$(echo_red "INSTALANDO MONITORES MQTT...")"
 
-    # fazer verificção se o usuario passou os argumentos necessarios
+    # --- 1. Validações e Binários (Fail Fast) ---
+    : "${MQTT_BROKER:?Erro: MQTT_BROKER não definido}"
+    : "${MQTT_PORT:?Erro: MQTT_PORT não definido}"
+    : "${MQTT_TOPIC_DOCKER:?Erro: MQTT_TOPIC_DOCKER não definido}"
+    : "${MQTT_USER_DOCKER:?Erro: MQTT_USER_DOCKER não definido}"
+    : "${MQTT_PASSWORD:?Erro: MQTT_PASSWORD não definido}"
 
-    DOCKER_REPORTER_SCRIPT="/opt/docker_mqtt_scripts/docker_reporter.sh"
-    REPORTER_SERVICE_FILE="/etc/systemd/system/docker-mqtt-reporter.service"
-    DOCKER_COMMAND_LISTENER_SCRIPT="/opt/docker_mqtt_scripts/docker_command_listener.sh"
-    COMMAND_SERVICE_FILE="/etc/systemd/system/docker-mqtt-command.service"
-    RPI_REPORTER_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
-    RPI_REPORTER_SERVICE_LINK="/etc/systemd/system/isp-rpi-reporter.service"
+    local DOCKER_BIN; DOCKER_BIN="$(command -v docker)" || { print_log "$(log_error)" "docker não encontrado"; return 1; }
+    local PUB_BIN; PUB_BIN="$(command -v mosquitto_pub)" || { print_log "$(log_error)" "mosquitto_pub não encontrado"; return 1; }
+    local SUB_BIN; SUB_BIN="$(command -v mosquitto_sub)" || { print_log "$(log_error)" "mosquitto_sub não encontrado"; return 1; }
+    local NC_BIN; NC_BIN="$(command -v nc)" || { print_log "$(log_error)" "nc não encontrado"; return 1; }
+    local PYTHON_BIN; PYTHON_BIN="$(command -v python3)" || { print_log "$(log_error)" "python3 não encontrado"; return 1; }
 
-    instalar_programa mosquitto-clients python3 python3-pip python3-tzlocal python3-sdnotify python3-colorama python3-unidecode python3-apt python3-paho-mqtt python3-requests
+    # --- 2. Definição de Paths ---
+    local SCRIPTS_DIR="/opt/docker_mqtt_scripts"
+    local ENV_FILE="/etc/docker_mqtt.env"
+    local PASS_FILE="/etc/docker_mqtt.pass"
+    local REPORTER_SCRIPT="${SCRIPTS_DIR}/docker_reporter.sh"
+    local COMMAND_SCRIPT="${SCRIPTS_DIR}/docker_command_listener.sh"
+    local RPI_DIR="/opt/RPi-Reporter-MQTT2HA-Daemon"
 
-    # Executar todas as etapas em um único processo em segundo plano
+    sudo mkdir -p "$SCRIPTS_DIR"
+    sudo chown root:root "$SCRIPTS_DIR"
+    sudo chmod 750 "$SCRIPTS_DIR" # Apenas root e grupo root leem
+
     {
-        # --- Configuração do Docker Reporter ---
-        if [ ! -f "${DOCKER_REPORTER_SCRIPT}" ]; then
-            sudo mkdir -p /opt/docker_mqtt_scripts/ || { print_log "$(log_error)" "$(echo_red "Falha ao criar diretório para scripts do Docker.")" && exit 1; }
-            sudo bash -c "cat << 'EOF_REPORTER_SCRIPT' > ${DOCKER_REPORTER_SCRIPT}
+        # --- 3. Escrita Atômica de Segredos ---
+        # Cria arquivos temporários, ajusta permissões e move atomicamente.
+        
+        # 3.1 ENV FILE (Configurações gerais)
+        local TMP_ENV; TMP_ENV=$(mktemp)
+        cat <<EOF > "$TMP_ENV"
+MQTT_BROKER="${MQTT_BROKER}"
+MQTT_PORT="${MQTT_PORT}"
+MQTT_USER="${MQTT_USER_DOCKER}"
+MQTT_TOPIC="${MQTT_TOPIC_DOCKER}"
+INTERVAL_SECONDS="${INTERVAL_SECONDS:-60}"
+EOF
+        sudo chown root:root "$TMP_ENV"
+        sudo chmod 600 "$TMP_ENV"
+        sudo mv "$TMP_ENV" "$ENV_FILE"
+
+        # 3.2 PASS FILE (Apenas a senha)
+        local TMP_PASS; TMP_PASS=$(mktemp)
+        echo -n "${MQTT_PASSWORD}" > "$TMP_PASS"
+        sudo chown root:root "$TMP_PASS"
+        sudo chmod 600 "$TMP_PASS"
+        sudo mv "$TMP_PASS" "$PASS_FILE"
+
+        # --- 4. Detecção de Capacidade (--pw-file) ---
+        # Define qual estratégia o script gerado usará, sem hardcodar a senha no script.
+        local USE_PW_FILE="false"
+        if "$PUB_BIN" --help 2>&1 | grep -q -- '--pw-file'; then
+            USE_PW_FILE="true"
+        fi
+
+        # --- 5. Service: mqtt-ready (Com Timeout Seguro) ---
+        local TMP_SVC; TMP_SVC=$(mktemp)
+        cat <<EOF > "$TMP_SVC"
+[Unit]
+Description=Wait for MQTT broker to be ready
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Tenta conectar por 30s. Se falhar, sai com 0 para não quebrar o boot, mas loga o erro.
+ExecStart=/bin/bash -c 'for i in {1..30}; do ${NC_BIN} -z -w 2 ${MQTT_BROKER} ${MQTT_PORT} && exit 0; sleep 1; done; echo "MQTT Warning: Broker not reachable after 30s"; exit 0'
+TimeoutStartSec=35
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+        sudo mv "$TMP_SVC" /etc/systemd/system/mqtt-ready.service
+
+        # --- 6. Script: Docker Reporter (Com Monitoramento de Disco Diário) ---
+        local containers_line
+        containers_line=$(printf '"%s" ' "${CONTAINERS_PARA_MONITORAR[@]}")
+
+        cat <<EOF | sudo tee "$REPORTER_SCRIPT" > /dev/null
 #!/bin/bash
-# Este script coleta informações de monitoramento do Docker e as publica em um broker MQTT.
+set -euo pipefail
+trap 'exit 0' SIGINT SIGTERM
 
-MQTT_BROKER=\"${MQTT_BROKER}\"
-MQTT_PORT=\"${MQTT_PORT}\"
-MQTT_USER=\"${MQTT_USER_DOCKER}\"
-MQTT_PASSWORD='${MQTT_PASSWORD}'
-MQTT_TOPIC=\"${MQTT_TOPIC_DOCKER}\"
-INTERVAL_SECONDS=${INTERVAL_SECONDS}
+# Carregar ambiente
+[ -f "$ENV_FILE" ] && . "$ENV_FILE"
 
-# Containers monitorados (lista simples, mais eficiente)
-CONTAINERS=\"$(printf '%s ' \"${CONTAINERS_PARA_MONITORAR[@]}\")\"
+DOCKER_BIN="${DOCKER_BIN}"
+PUB_BIN="${PUB_BIN}"
+PASS_FILE="${PASS_FILE}"
 
-mqtt_publish() {
-    mosquitto_pub \\
-        -h \"\$MQTT_BROKER\" \\
-        -p \"\$MQTT_PORT\" \\
-        -t \"\$1\" \\
-        -m \"\$2\" \\
-        -r \\
-        -u \"\$MQTT_USER\" \\
-        -P \"\$MQTT_PASSWORD\"
+# Autenticação MQTT
+AUTH_ARGS=()
+if [ "$USE_PW_FILE" = "true" ]; then
+    AUTH_ARGS=("--pw-file" "\$PASS_FILE")
+else
+    AUTH_ARGS=("-P" "\$(< \$PASS_FILE)")
+fi
+
+CONTAINERS=(${containers_line})
+
+# Defaults
+: "\${MQTT_BROKER:?}"
+: "\${MQTT_PORT:?}"
+: "\${MQTT_USER:?}"
+: "\${MQTT_TOPIC:?}"
+INTERVAL="\${INTERVAL_SECONDS:-60}"
+
+# Variável para controlar o loop diário (Inicializa zerado para rodar na primeira vez)
+LAST_DISK_CHECK=0
+ONE_DAY_SEC=86400
+
+# Função Helper para publicar
+mqtt_pub() {
+    local subtopic="\$1"
+    local msg="\$2"
+    "\$PUB_BIN" -h "\$MQTT_BROKER" -p "\$MQTT_PORT" -u "\$MQTT_USER" "\${AUTH_ARGS[@]}" \
+        -t "\$MQTT_TOPIC/\$subtopic" -m "\$msg" -r
 }
 
-get_docker_metrics() {
-
-    # 1) CPU (e memória opcional) – coleta em lote
-    docker stats --no-stream --format \"{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}\" \$CONTAINERS 2>/dev/null |
-    while IFS=\"|\" read -r name cpu mem; do
-        mqtt_publish \"\${MQTT_TOPIC}/container/\${name}/cpu_usage\" \"\$cpu\"
-        # Se quiser memória no futuro:
-        # mqtt_publish \"\${MQTT_TOPIC}/container/\${name}/mem_usage\" \"\$mem\"
-    done
-
-    # 2) Status dos containers
-    for c in \$CONTAINERS; do
-        STATUS=\$(docker inspect -f '{{.State.Status}}' \"\$c\" 2>/dev/null || echo \"not_found\")
-        mqtt_publish \"\${MQTT_TOPIC}/status/\${c}\" \"\$STATUS\"
-    done
-
-    # 3) Uso de disco Docker (simples e leve)
-    docker system df --format \"{{.Type}}|{{.TotalCount}}|{{.Size}}\" 2>/dev/null |
-    while IFS=\"|\" read -r type count size; do
-        case \"\$type\" in
-            Images)
-                mqtt_publish \"\${MQTT_TOPIC}/disk/images_count\" \"\$count\"
-                mqtt_publish \"\${MQTT_TOPIC}/disk/images_used\" \"\$size\"
-                ;;
-            Containers)
-                mqtt_publish \"\${MQTT_TOPIC}/disk/containers_count\" \"\$count\"
-                mqtt_publish \"\${MQTT_TOPIC}/disk/containers_used\" \"\$size\"
-                ;;
-            \"Local Volumes\")
-                mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_count\" \"\$count\"
-                mqtt_publish \"\${MQTT_TOPIC}/disk/volumes_used\" \"\$size\"
-                ;;
-        esac
-    done
-}
-
-# Loop principal
 while true; do
-    if systemctl is-active --quiet docker; then
-        get_docker_metrics
+    NOW=\$(date +%s)
+
+    # --- BLOCO 1: Monitoramento Diário de Disco (Executa a cada 24h) ---
+    if [ \$((NOW - LAST_DISK_CHECK)) -ge \$ONE_DAY_SEC ] || [ "\$LAST_DISK_CHECK" -eq 0 ]; then
+        echo "Executando verificação diária de disco..." | systemd-cat -t docker-mqtt-reporter
+        
+        # 1.1 Totais do Docker (Total em disco real)
+        # Tenta pegar o tamanho da pasta root do Docker (geralmente /var/lib/docker)
+        TOTAL_SIZE=\$(du -sh /var/lib/docker 2>/dev/null | awk '{print \$1}' || echo "unknown")
+        mqtt_pub "system/disk/total_usage" "\$TOTAL_SIZE"
+
+        # 1.2 Detalhes por Objeto (Imagens, Containers, Volumes)
+        # Formato output do docker df: "Type  TotalCount  Active  Size  Reclaimable"
+        # Parsing linha a linha.
+        "\$DOCKER_BIN" system df --format '{{.Type}}|{{.TotalCount}}|{{.Size}}' | while IFS='|' read -r type count size; do
+            case "\$type" in
+                "Images")
+                    mqtt_pub "system/images/count" "\$count"
+                    mqtt_pub "system/images/size" "\$size"
+                    ;;
+                "Containers")
+                    mqtt_pub "system/containers/count" "\$count"
+                    mqtt_pub "system/containers/size" "\$size"
+                    ;;
+                "Local Volumes")
+                    mqtt_pub "system/volumes/count" "\$count"
+                    mqtt_pub "system/volumes/size" "\$size"
+                    ;;
+                "Build Cache")
+                    mqtt_pub "system/cache/size" "\$size"
+                    ;;
+            esac
+        done
+        
+        LAST_DISK_CHECK=\$NOW
     fi
-    sleep \"\$INTERVAL_SECONDS\"
+
+    # --- BLOCO 2: Monitoramento Rápido (Containers Específicos) ---
+    if [ "\${#CONTAINERS[@]}" -gt 0 ]; then
+        for name in "\${CONTAINERS[@]}"; do
+            STATUS=\$("\$DOCKER_BIN" inspect -f '{{.State.Status}}' "\$name" 2>/dev/null || echo "not_found")
+            mqtt_pub "status/\$name" "\$STATUS"
+
+            if [ "\$STATUS" = "running" ]; then
+                CPU=\$("\$DOCKER_BIN" stats --no-stream --format "{{.CPUPerc}}" "\$name" 2>/dev/null | sed 's/%//' || echo "0")
+                mqtt_pub "container/\$name/cpu_usage" "\$CPU"
+            fi
+        done
+    fi
+
+    sleep "\$INTERVAL"
 done
-EOF_REPORTER_SCRIPT" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o script docker_reporter.sh.")" && exit 1; }
-            sudo chmod +x "${DOCKER_REPORTER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "Falha ao tornar o script docker_reporter.sh executável.")" && exit 1; }
-        fi
+EOF
+        sudo chown root:root "$REPORTER_SCRIPT"
+        sudo chmod 750 "$REPORTER_SCRIPT"        
 
-        if [ ! -f "${REPORTER_SERVICE_FILE}" ]; then
-            sudo bash -c "cat << 'EOF_REPORTER_SERVICE' > ${REPORTER_SERVICE_FILE}
-[Unit]
-Description=Docker MQTT Reporter Service
-After=network.target docker.service mqtt.service
-
-[Service]
-ExecStart=/opt/docker_mqtt_scripts/docker_reporter.sh
-Restart=always
-User=root
-Group=root
-
-[Install]
-WantedBy=multi-user.target
-EOF_REPORTER_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o arquivo de serviço do Docker Reporter.")" && exit 1; }
-        fi
-
-        # --- Configuração do Docker Command Listener ---
-        if [ ! -f "${DOCKER_COMMAND_LISTENER_SCRIPT}" ]; then
-            sudo bash -c "cat << 'EOF_COMMAND_SCRIPT' > ${DOCKER_COMMAND_LISTENER_SCRIPT}
+        # --- 7. Script: Command Listener ---
+        cat <<EOF | sudo tee "$COMMAND_SCRIPT" > /dev/null
 #!/bin/bash
-MQTT_BROKER=\"${MQTT_BROKER}\"
-MQTT_PORT=\"${MQTT_PORT}\"
-MQTT_USER=\"${MQTT_USER_DOCKER}\"
-MQTT_PASSWORD='${MQTT_PASSWORD}'
-MQTT_COMMAND_TOPIC=\"${MQTT_TOPIC_DOCKER}/command/#\"
-mosquitto_sub -h \"\$MQTT_BROKER\" -p \"\$MQTT_PORT\" -u \"\$MQTT_USER\" -P \"\$MQTT_PASSWORD\" -t \"\$MQTT_COMMAND_TOPIC\" -q 1 | while read -r payload; do
-    command=\$(echo \"\$payload\" | awk '{print \$1}')
-    container_name=\$(echo \"\$payload\" | awk '{print \$2}')
-    if [ -z \"\$command\" ] || [ -z \"\$container_name\" ]; then
-        continue
-    fi
-    case \"\$command\" in
-        \"start\")
-            docker start \"\$container_name\"
-            ;;
-        \"stop\")
-            docker stop \"\$container_name\"
-            ;;
-        \"restart\")
-            docker restart \"\$container_name\"
-            ;;
-        *)
-            ;;
-    esac
-done
-EOF_COMMAND_SCRIPT" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o script docker_command_listener.sh.")" && exit 1; }
-            sudo chmod +x "${DOCKER_COMMAND_LISTENER_SCRIPT}" || { print_log "$(log_error)" "$(echo_red "Falha ao tornar o script docker_command_listener.sh executável.")" && exit 1; }
-        fi
+set -euo pipefail
+# Mata mosquitto_sub filho ao receber sinal
+trap 'pkill -P \$\$ 2>/dev/null || true; exit 0' SIGINT SIGTERM
 
-        if [ ! -f "${COMMAND_SERVICE_FILE}" ]; then
-            sudo bash -c "cat << 'EOF_COMMAND_SERVICE' > ${COMMAND_SERVICE_FILE}
+[ -f "$ENV_FILE" ] && . "$ENV_FILE"
+
+DOCKER_BIN="${DOCKER_BIN}"
+SUB_BIN="${SUB_BIN}"
+PASS_FILE="${PASS_FILE}"
+
+AUTH_ARGS=()
+if [ "$USE_PW_FILE" = "true" ]; then
+    AUTH_ARGS=("--pw-file" "\$PASS_FILE")
+else
+    AUTH_ARGS=("-P" "\$(< \$PASS_FILE)")
+fi
+
+# Loop com Process Substitution (seguro para traps)
+while read -r payload; do
+    cmd=\$(awk '{print \$1}' <<< "\$payload")
+    target=\$(awk '{print \$2}' <<< "\$payload")
+    
+    if [[ "\$cmd" =~ ^(start|stop|restart)\$ ]] && [ -n "\$target" ]; then
+        echo "Executando: docker \$cmd \$target"
+        "\$DOCKER_BIN" "\$cmd" "\$target" || true
+    fi
+done < <("\$SUB_BIN" -h "\$MQTT_BROKER" -p "\$MQTT_PORT" -u "\$MQTT_USER" "\${AUTH_ARGS[@]}" -t "\$MQTT_TOPIC/command/#")
+EOF
+        sudo chown root:root "$COMMAND_SCRIPT"
+        sudo chmod 750 "$COMMAND_SCRIPT"
+
+        # --- 8. Units Systemd (Hardening + Health Check) ---
+        for type in "reporter" "command"; do
+            local script_path="$REPORTER_SCRIPT"
+            [ "$type" == "command" ] && script_path="$COMMAND_SCRIPT"
+            
+            # ExecStartPre:
+            # 1. Verifica se docker binário é executável
+            # 2. Verifica conectividade básica TCP com broker (fail-fast)
+            
+            local SVC_TMP; SVC_TMP=$(mktemp)
+            cat <<EOF > "$SVC_TMP"
 [Unit]
-Description=Docker MQTT Command Listener Service
-After=network.target docker.service mqtt.service
+Description=Docker MQTT ${type^}
+Wants=mqtt-ready.service
+After=docker.service mqtt-ready.service network-online.target
 
 [Service]
-ExecStart=/opt/docker_mqtt_scripts/docker_command_listener.sh
+EnvironmentFile=${ENV_FILE}
+ExecStart=${script_path}
+# Health Checks antes de iniciar
+ExecStartPre=/usr/bin/test -x ${DOCKER_BIN}
+ExecStartPre=/bin/bash -c '${NC_BIN} -z -w 2 \${MQTT_BROKER} \${MQTT_PORT} || exit 0' 
+
 Restart=always
+RestartSec=30
+TimeoutStartSec=35
+KillMode=control-group
 User=root
-Group=root
+
+# Hardening (Ajuste conforme necessário)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-EOF_COMMAND_SERVICE" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o arquivo de serviço do Docker Command Listener.")" && exit 1; }
+EOF
+            sudo mv "$SVC_TMP" "/etc/systemd/system/docker-mqtt-${type}.service"
+        done
+
+        # --- 9. RPi-Reporter e Link ---
+        if [ ! -d "$RPI_DIR" ]; then
+            sudo git clone https://github.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon.git "$RPI_DIR" || print_log "$(log_error)" "Clone RPi falhou"
+            sudo "$PYTHON_BIN" -m pip install --break-system-packages -r "${RPI_DIR}/requirements.txt" || print_log "$(log_error)" "Pip RPi falhou"
+        fi
+        if [ -f "${RPI_DIR}/isp-rpi-reporter.service" ]; then
+            sudo ln -sf "${RPI_DIR}/isp-rpi-reporter.service" /etc/systemd/system/isp-rpi-reporter.service
         fi
 
-        # --- Configuração do RPi-Reporter ---
-        if [ ! -d "${RPI_REPORTER_DIR}" ]; then
-
-            sudo git clone https://github.com/ironsheep/RPi-Reporter-MQTT2HA-Daemon.git "${RPI_REPORTER_DIR}" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao clonar o repositório do RPi-Reporter.")" && exit 1; }
-
-            sudo pip install --break-system-packages -r "${RPI_REPORTER_DIR}/requirements.txt" >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao instalar dependências do RPi-Reporter.")" && exit 1; }
-            
-            sudo cp "${RPI_REPORTER_DIR}/config.ini.dist" "${RPI_REPORTER_DIR}/config.ini" || { print_log "$(log_error)" "$(echo_red "ERRO: Falha ao criar o arquivo de configuração do RPi-Reporter.")" && exit 1; }
-
-            # Comenta as seções [Commands] e [MQTT] existentes no arquivo inicial para evitar o erro de seção duplicada.
-            sudo sed -i '/^\[Commands\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
-            sudo sed -i '/^\[MQTT\]/s/^/#&/' "${RPI_REPORTER_DIR}/config.ini"
-
-
-            sudo bash -c "cat << EOF_RPI_CONFIG >> "${RPI_REPORTER_DIR}/config.ini"
-
-
-[Commands]
-
-Desligar_TV = /bin/bash -c \"echo 'standby 0' | cec-client -s\"
-
-Ligar_TV = /bin/bash -c \"echo 'on 0' | cec-client -s\"
-
-HDMI_1 = /bin/bash -c \"echo 'txn 1f:82:10:00' | cec-client -s\"
-
-HDMI_2 = /bin/bash -c \"echo 'txn 1f:82:20:00' | cec-client -s\"
-
-Reiniciar_Rasperry = sudo /sbin/reboot
-
-PC = /bin/bash -c \"sudo pinctrl 6 op; sleep 0.1; sudo pinctrl 6 ip\"
-
-Ligar_Computador = /bin/bash -c \"echo 'on 0' | cec-client -s; sudo pinctrl 6 op; sleep 0.1; sudo pinctrl 6 ip\"
-
-Desligar_Computador = /bin/bash -c \"echo 'standby 0' | cec-client -s; sudo pinctrl 6 op; sleep 0.1; sudo pinctrl 6 ip\"
-
-
-[MQTT]
-
-hostname = ${MQTT_BROKER}
-port = ${MQTT_PORT}
-username = ${MQTT_USER_RPI}
-password = ${MQTT_PASSWORD}
-base_topic = ${MQTT_TOPIC_RPI}
-
-EOF_RPI_CONFIG" || { print_log "$(log_error)" "$(echo_red "Falha ao adicionar configurações ao config.ini.")" && exit 1; }
+        # --- 10. Ativação com Verificação de Erro ---
+        if compgen -G "${SCRIPTS_DIR}/*.sh" >/dev/null; then
+            sudo chmod +x "${SCRIPTS_DIR}"/*.sh
         fi
 
-        sudo usermod daemon -a -G video || { print_log "$(log_error)" "$(echo_red "Falha ao adicionar o usuário 'daemon' ao grupo 'video'.")" && exit 1; }
+        sudo systemctl daemon-reload
+        local srv_list=(mqtt-ready.service docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service)
+        
+        for srv in "${srv_list[@]}"; do
+            # Verifica se o arquivo unit existe antes de tentar ativar (evita erro no isp-rpi se não clonou)
+            if systemctl list-unit-files "$srv" >/dev/null 2>&1 || [ -f "/etc/systemd/system/$srv" ]; then
+                if ! sudo systemctl enable "$srv" >/dev/null 2>&1; then
+                     print_log "$(log_error)" "Aviso: Não foi possível habilitar $srv"
+                fi
+                if ! sudo systemctl restart "$srv" >/dev/null 2>&1; then
+                     print_log "$(log_error)" "ERRO: Falha ao iniciar $srv. Verificando logs..."
+                     sudo journalctl -u "$srv" -n 20 --no-pager
+                else
+                     print_log "$(log_info)" "Serviço iniciado: $srv"
+                fi
+            fi
+        done
 
-        if [ ! -L "${RPI_REPORTER_SERVICE_LINK}" ]; then
-            sudo ln -s "${RPI_REPORTER_DIR}/isp-rpi-reporter.service" "${RPI_REPORTER_SERVICE_LINK}" || { print_log "$(log_error)" "$(echo_red "Falha ao criar o link simbólico do serviço do RPi-Reporter.")" && exit 1; }
-        fi
-
-        # --- Ativar e Iniciar Serviços ---
-        sudo systemctl daemon-reload || { print_log "$(log_error)" "$(echo_red "Falha ao recarregar o daemon do systemd.")" && exit 1; }
-
-        sudo systemctl enable docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao habilitar serviços de monitoramento.")" && exit 1; }
-        sudo systemctl start docker-mqtt-reporter.service docker-mqtt-command.service isp-rpi-reporter.service >/dev/null 2>&1 || { print_log "$(log_error)" "$(echo_red "Falha ao iniciar serviços de monitoramento.")" && exit 1; }
-
-    } & # Executar tudo em um único processo em segundo plano
+    } &
     local pid=$!
-
-    if show_progress "INSTALANDO E CONFIGURANDO MONITORAMENTO..." $pid; then
-        print_log "$(log_success)" "$(echo_green "MONITORAMENTO CONFIGURADO COM SUCESSO!")"
-    else
-        print_log "$(log_error)" "$(echo_red "A configuração do monitoramento falhou em uma das etapas.")"
-        return 1
-    fi
+    show_progress "MONITORAMENTO CONFIGURADO COM SUCESSO." "$pid"
 }
 
